@@ -22,7 +22,7 @@ public class AuthorDatabase {
 			conn = DatabaseConnection.getConnection();
 			
 			// get author data ordered by name ascending
-			String sqlStatement = "SELECT * FROM \"public\".\"Author\" ORDER BY \"Name\"";
+			String sqlStatement = "SELECT * FROM author ORDER BY name";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 
 			ResultSet rs = st.executeQuery();
@@ -31,12 +31,12 @@ public class AuthorDatabase {
 			// escaping html special characters
 			while(rs.next()) {
 				Author author = new Author();
-				author.setAuthorID(rs.getInt("AuthorID"));
-				author.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
-				author.setNationality(StringEscapeUtils.escapeHtml4(rs.getString("Nationality")));
-				author.setBirthDate(rs.getDate("BirthDate"));
-				author.setBiography(StringEscapeUtils.escapeHtml4(rs.getString("Biography")));
-				author.setLink(StringEscapeUtils.escapeHtml4(rs.getString("Link")));;
+				author.setAuthorID(rs.getInt("authorid"));
+				author.setName(StringEscapeUtils.escapeHtml4(rs.getString("name")));
+				author.setNationality(StringEscapeUtils.escapeHtml4(rs.getString("nationality")));
+				author.setBirthDate(rs.getDate("birthdate"));
+				author.setBiography(StringEscapeUtils.escapeHtml4(rs.getString("biography")));
+				author.setLink(StringEscapeUtils.escapeHtml4(rs.getString("link")));;
 				authors.add(author);
 			}
 		} catch (Exception e) {
@@ -59,7 +59,7 @@ public class AuthorDatabase {
 			conn = DatabaseConnection.getConnection();
 
 			// get author data by author id
-			String sqlStatement = "SELECT * FROM \"public\".\"Author\" WHERE \"AuthorID\" = ?";
+			String sqlStatement = "SELECT * FROM author WHERE authorid = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setInt(1, id);
 			
@@ -69,12 +69,12 @@ public class AuthorDatabase {
 			// author data is added to author object
 			if(rs.next()) {
 				author = new Author();
-				author.setAuthorID(rs.getInt("AuthorID"));
-				author.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
-				author.setNationality(StringEscapeUtils.escapeHtml4(rs.getString("Nationality")));
-				author.setBirthDate(rs.getDate("BirthDate"));
-				author.setBiography(StringEscapeUtils.escapeHtml4(rs.getString("Biography")));
-				author.setLink(StringEscapeUtils.escapeHtml4(rs.getString("Link")));
+				author.setAuthorID(rs.getInt("authorid"));
+				author.setName(StringEscapeUtils.escapeHtml4(rs.getString("name")));
+				author.setNationality(StringEscapeUtils.escapeHtml4(rs.getString("nationality")));
+				author.setBirthDate(rs.getDate("birthdate"));
+				author.setBiography(StringEscapeUtils.escapeHtml4(rs.getString("biography")));
+				author.setLink(StringEscapeUtils.escapeHtml4(rs.getString("link")));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,7 +87,7 @@ public class AuthorDatabase {
 	}
 
 	// insert author into database
-	public int registerAuthor(Author author) throws SQLException {
+	public int createAuthor(Author author) throws SQLException {
 		Connection conn = null;
 		int rowsAffected = 0;
 		
@@ -95,7 +95,7 @@ public class AuthorDatabase {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 			
-			String sqlStatement = "INSERT INTO \"public\".\"Author\" (\"Name\", \"Nationality\", \"BirthDate\", \"Biography\", \"Link\") VALUES (?, ?, ?, ?, ?)";
+			String sqlStatement = "INSERT INTO author (name, nationality, birthdate, biography, link) VALUES (?, ?, ?, ?, ?)";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setString(1, author.getName());
 			st.setString(2, author.getNationality());
@@ -130,7 +130,7 @@ public class AuthorDatabase {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 
-			String sqlStatement = "UPDATE \"public\".\"Author\" SET \"Name\" = ?, \"Nationality\" = ?, \"BirthDate\" = ?, \"Biography\" = ?, \"Link\" = ? WHERE \"AuthorID\" = ?";
+			String sqlStatement = "UPDATE author SET name = ?, nationality = ?, birthdate = ?, biography = ?, link = ? WHERE authorid = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setString(1, author.getName());
 			st.setString(2, author.getNationality());
@@ -166,7 +166,7 @@ public class AuthorDatabase {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 
-			String sqlStatement = "DELETE FROM \"public\".\"Author\" WHERE \"AuthorID\" = ?";
+			String sqlStatement = "DELETE FROM author WHERE authorid = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setInt(1, id);
 
