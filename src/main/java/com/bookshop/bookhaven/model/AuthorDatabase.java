@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 6.7.2023
+// Date			: 11.7.2023
 // Description	: all database functions related to author
 
 package com.bookshop.bookhaven.model;
@@ -14,7 +14,7 @@ import org.apache.commons.text.StringEscapeUtils;
 public class AuthorDatabase {
 	
 	// get all author data from database
-	public ArrayList<Author> getAuthor() throws SQLException {
+	public ArrayList<Author> getAuthors() throws SQLException {
 		Connection conn = null;
 		ArrayList<Author> authors = new ArrayList<Author>();
 		try {			

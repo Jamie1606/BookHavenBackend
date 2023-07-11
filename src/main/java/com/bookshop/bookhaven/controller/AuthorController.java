@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 10.7.2023
+// Date			: 11.7.2023
 // Description	: middleware for author
 
 package com.bookshop.bookhaven.controller;
@@ -27,7 +27,7 @@ public class AuthorController {
 		
 		try {
 			AuthorDatabase author_db = new AuthorDatabase();
-			authorList = author_db.getAuthor();
+			authorList = author_db.getAuthors();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -36,7 +36,7 @@ public class AuthorController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
-	public Author getAuthor(@PathVariable String authorid) {
+	public Author getAuthor(@PathVariable("id") String authorid) {
 		Author author = new Author();
 		try {
 			AuthorDatabase author_db = new AuthorDatabase();
@@ -66,7 +66,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.PUT,
 			consumes = "application/json",
 			path = "/updateAuthor/{id}")
-	public int updateAuthor(@PathVariable String authorid, @RequestBody Author author) {
+	public int updateAuthor(@PathVariable("id") String authorid, @RequestBody Author author) {
 		int row = 0;
 		try {
 			author.setAuthorID(Integer.parseInt(authorid));
@@ -80,7 +80,7 @@ public class AuthorController {
 	}
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteAuthor/{id}")
-	public int deleteAuthor(@PathVariable String authorid) {
+	public int deleteAuthor(@PathVariable("id") String authorid) {
 		int row = 0;
 		try {
 			AuthorDatabase author_db = new AuthorDatabase();
