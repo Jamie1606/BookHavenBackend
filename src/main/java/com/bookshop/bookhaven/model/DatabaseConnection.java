@@ -13,9 +13,9 @@ import java.sql.DriverManager;
 public class DatabaseConnection {
 	public static Connection getConnection() {
 		// database configuration
-		String connURL = "jdbc:mysql://bookhaven.clcf0fzaiwt0.us-east-2.rds.amazonaws.com:3306/bookhavendb";
+		String connURL = "jdbc:mysql://bookhaven.csdkuovyzywj.ap-southeast-1.rds.amazonaws.com:3306/bookhavendb";
 		String db_username = "admin";
-		String db_password = "qnSjZbjS7ERMqYZjv6C3";
+		String db_password = "Jx3GMvmTKzUmrsgHXim4";
 		
 		Connection conn = null;
 		
