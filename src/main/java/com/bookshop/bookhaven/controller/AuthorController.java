@@ -35,7 +35,7 @@ public class AuthorController {
 		return authorList;
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}", consumes = "")
+	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
 	public Author getAuthor(@PathVariable String authorid) {
 		Author author = new Author();
 		try {
