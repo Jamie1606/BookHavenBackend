@@ -9,10 +9,13 @@ package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookshop.bookhaven.model.Author;
@@ -31,12 +34,13 @@ public class AuthorController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		return authorList;
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
-	public Author getAuthor(@PathVariable("id") String authorid) {
+	public ResponseEntity<?> getAuthor(@PathVariable("id") String authorid) {
 		Author author = new Author();
 		try {
 			AuthorDatabase author_db = new AuthorDatabase();
@@ -44,8 +48,9 @@ public class AuthorController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+			return ResponseEntity.badRequest().body("Author does not exist!");
 		}
-		return author;
+		return ResponseEntity.ok().body(author);
 	}
 	
 	@RequestMapping(method = RequestMethod.POST,
@@ -65,11 +70,10 @@ public class AuthorController {
 	
 	@RequestMapping(method = RequestMethod.PUT,
 			consumes = "application/json",
-			path = "/updateAuthor/{id}")
-	public int updateAuthor(@PathVariable("id") String authorid, @RequestBody Author author) {
+			path = "/updateAuthor")
+	public int updateAuthor(@RequestBody Author author) {
 		int row = 0;
 		try {
-			author.setAuthorID(Integer.parseInt(authorid));
 			AuthorDatabase author_db = new AuthorDatabase();
 			row = author_db.updateAuthor(author);
 		}
