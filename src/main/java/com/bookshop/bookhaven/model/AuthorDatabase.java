@@ -129,24 +129,31 @@ public class AuthorDatabase {
 		try {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
-
-			String sqlStatement = "UPDATE Author SET Name = ?, Nationality = ?, BirthDate = ?, Biography = ?, Link = ? WHERE AuthorID = ?";
-			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setString(1, author.getName());
-			st.setString(2, author.getNationality());
-
-			// check null value for birthdate
-			if (author.getBirthDate() == null) {
-				st.setNull(3, Types.DATE);
-			} else {
-				st.setDate(3, Date.valueOf(author.getBirthDate().toString()));
-			}
 			
-			st.setString(4, author.getBiography());
-			st.setString(5, author.getLink());
-			st.setInt(6, author.getAuthorID());
-
-			rowsAffected = st.executeUpdate();
+			String sqlStatement = "SELECT * FROM Author WHERE AuthorID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, author.getAuthorID());
+			ResultSet rs = st.executeQuery();
+			
+			if(rs.next()) {
+				sqlStatement = "UPDATE Author SET Name = ?, Nationality = ?, BirthDate = ?, Biography = ?, Link = ? WHERE AuthorID = ?";
+				st = conn.prepareStatement(sqlStatement);
+				st.setString(1, author.getName());
+				st.setString(2, author.getNationality());
+	
+				// check null value for birthdate
+				if (author.getBirthDate() == null) {
+					st.setNull(3, Types.DATE);
+				} else {
+					st.setDate(3, Date.valueOf(author.getBirthDate().toString()));
+				}
+				
+				st.setString(4, author.getBiography());
+				st.setString(5, author.getLink());
+				st.setInt(6, author.getAuthorID());
+	
+				rowsAffected = st.executeUpdate();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("..... Error in updateAuthor in AuthorDatabase .....");
