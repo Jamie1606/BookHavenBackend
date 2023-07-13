@@ -9,40 +9,58 @@ package com.bookshop.bookhaven.controller;
 
 import java.io.InputStream;
 
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bookshop.bookhaven.model.Image;
 import com.bookshop.bookhaven.model.S3Service;
 
 @RestController
 public class ImageController {
 	
-	@RequestMapping(method = RequestMethod.POST, path = "/uploadImage/", consumes = "application/json")
-	public boolean uploadImage(@RequestParam("image") MultipartFile imageFile, @RequestBody Image image) {
+	@RequestMapping(method = RequestMethod.POST, path = "/uploadImage/book/normal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public boolean uploadNormalBookImage(@RequestParam("image") MultipartFile imageFile) {
 		boolean condition = false;
 		try {
 			InputStream inputstream = imageFile.getInputStream();
 			long filesize = imageFile.getSize();
 			S3Service s3service = new S3Service();
-			String key = "";
-			if(image.getType().equals("member")) {
-				key = "/member/" + image.getFileName();
-			}
-			else if(image.getType().equals("3dbook")) {
-				key = "/book/3d/" + image.getFileName();
-			}
-			else if(image.getType().equals("normalbook")) {
-				key = "/book/normal/" + image.getFileName();
-			}
-			else {
-				return false;
-			}
-			
+			String key = "book/normal/" + imageFile.getOriginalFilename();
+			condition = s3service.uploadImage(key, inputstream, filesize);
+		}
+		catch(Exception e) { 
+			e.printStackTrace();
+		}
+		return condition;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/uploadImage/book/3d", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public boolean upload3DBookImage(@RequestParam("image") MultipartFile imageFile) {
+		boolean condition = false;
+		try {
+			InputStream inputstream = imageFile.getInputStream();
+			long filesize = imageFile.getSize();
+			S3Service s3service = new S3Service();
+			String key = "book/3d/" + imageFile.getOriginalFilename();
+			condition = s3service.uploadImage(key, inputstream, filesize);
+		}
+		catch(Exception e) { 
+			e.printStackTrace();
+		}
+		return condition;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/uploadImage/member", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public boolean uploadMemberImage(@RequestParam("image") MultipartFile imageFile) {
+		boolean condition = false;
+		try {
+			InputStream inputstream = imageFile.getInputStream();
+			long filesize = imageFile.getSize();
+			S3Service s3service = new S3Service();
+			String key = "member/" + imageFile.getOriginalFilename();
 			condition = s3service.uploadImage(key, inputstream, filesize);
 		}
 		catch(Exception e) { 

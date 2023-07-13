@@ -22,14 +22,14 @@ public class S3Service {
 	
 	public S3Service() {
 		this.s3client = S3Client.builder()
-				.region(Region.US_EAST_2)
-				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("AKIA33YTKOYC7FJWFRXT", "SB2DQ4w7vkW0RHtEbWm5xI0TQ1A9cvxEiZ+/DWa+")))
+				.region(Region.AP_SOUTHEAST_1)
+				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("AKIA33YTKOYCXCNNBLFK", "CfcqjxjeeoAATXOU0J53LeVF59ynxHA8mSQRohc1")))
 				.build();
 	}
 	
 	public boolean uploadImage(String key, InputStream inputstream, long filesize) {
 		PutObjectResponse response = s3client.putObject(PutObjectRequest.builder()
-				.bucket("")
+				.bucket("jadbookhaven10")
 				.key(key)
 				.build(), RequestBody.fromInputStream(inputstream, filesize));
 		if(response.sdkHttpResponse().isSuccessful()) {
