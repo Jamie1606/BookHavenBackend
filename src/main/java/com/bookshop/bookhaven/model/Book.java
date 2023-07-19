@@ -11,7 +11,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 
 public class Book {
-	private String ISBNNo;
+	private String isbnno;
 	private String title;
 	private int page;
 	private double price;
@@ -27,11 +27,11 @@ public class Book {
 	private ArrayList<Genre> genres;
 	
 	public String getISBNNo() {
-		return ISBNNo;
+		return isbnno;
 	}
 	
-	public void setISBNNo(String iSBNNo) {
-		ISBNNo = iSBNNo;
+	public void setISBNNo(String isbnno) {
+		this.isbnno = isbnno;
 	}
 	
 	public String getTitle() {
