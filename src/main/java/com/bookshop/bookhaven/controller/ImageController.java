@@ -10,6 +10,7 @@ package com.bookshop.bookhaven.controller;
 import java.io.InputStream;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bookshop.bookhaven.model.S3Service;
+import com.bookshop.bookhaven.model.TempAuth;
+import com.bookshop.bookhaven.model.TempAuthDatabase;
 
 @RestController
 public class ImageController {
@@ -27,12 +30,31 @@ public class ImageController {
 		try {
 			InputStream inputstream = imageFile.getInputStream();
 			long filesize = imageFile.getSize();
-			S3Service s3service = new S3Service();
+			TempAuthDatabase tmpauth_db = new TempAuthDatabase();
+			TempAuth auth = tmpauth_db.getAuthKey();
+			S3Service s3service = new S3Service(auth.getAccesskey(), auth.getSecretkey(), auth.getSessiontoken());
 			String key = "book/normal/" + imageFile.getOriginalFilename();
 			condition = s3service.uploadImage(key, inputstream, filesize);
 		}
 		catch(Exception e) { 
 			e.printStackTrace();
+			return false;
+		}
+		return condition;
+	}
+	
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteImage/{image}")
+	public boolean deleteImage(@PathVariable String image) {
+		boolean condition = false;
+		try {
+			TempAuthDatabase tmpauth_db = new TempAuthDatabase();
+			TempAuth auth = tmpauth_db.getAuthKey();
+			S3Service s3service = new S3Service(auth.getAccesskey(), auth.getSecretkey(), auth.getSessiontoken());
+			condition = s3service.deleteImage(image);
+		}
+		catch(Exception e) { 
+			e.printStackTrace();
+			return false;
 		}
 		return condition;
 	}
@@ -43,7 +65,9 @@ public class ImageController {
 		try {
 			InputStream inputstream = imageFile.getInputStream();
 			long filesize = imageFile.getSize();
-			S3Service s3service = new S3Service();
+			TempAuthDatabase tmpauth_db = new TempAuthDatabase();
+			TempAuth auth = tmpauth_db.getAuthKey();
+			S3Service s3service = new S3Service(auth.getAccesskey(), auth.getSecretkey(), auth.getSessiontoken());
 			String key = "book/3d/" + imageFile.getOriginalFilename();
 			condition = s3service.uploadImage(key, inputstream, filesize);
 		}
@@ -59,7 +83,9 @@ public class ImageController {
 		try {
 			InputStream inputstream = imageFile.getInputStream();
 			long filesize = imageFile.getSize();
-			S3Service s3service = new S3Service();
+			TempAuthDatabase tmpauth_db = new TempAuthDatabase();
+			TempAuth auth = tmpauth_db.getAuthKey();
+			S3Service s3service = new S3Service(auth.getAccesskey(), auth.getSecretkey(), auth.getSessiontoken());
 			String key = "member/" + imageFile.getOriginalFilename();
 			condition = s3service.uploadImage(key, inputstream, filesize);
 		}
