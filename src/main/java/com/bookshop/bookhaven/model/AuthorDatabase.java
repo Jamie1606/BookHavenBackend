@@ -41,7 +41,7 @@ public class AuthorDatabase {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("..... Error in getAuthor in AuthorDatabase .....");
+			System.out.println("..... Error in getAuthors in AuthorDatabase .....");
 		}
 		finally {
 			conn.close();
