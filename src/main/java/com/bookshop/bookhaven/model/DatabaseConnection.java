@@ -2,7 +2,7 @@
 // Admin No		: 2235035, 2235022
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 11.7.2023
+// Date			: 14.7.2023
 // Description	: database configuration
 
 package com.bookshop.bookhaven.model;
@@ -13,9 +13,9 @@ import java.sql.DriverManager;
 public class DatabaseConnection {
 	public static Connection getConnection() {
 		// database configuration
-		String connURL = "jdbc:mysql://bookhaven.csdkuovyzywj.ap-southeast-1.rds.amazonaws.com:3306/bookhavendb";
+		String connURL = "jdbc:mysql://bookhaven.cv6i8me24stp.us-east-1.rds.amazonaws.com:3306/bookhavendb";
 		String db_username = "admin";
-		String db_password = "Jx3GMvmTKzUmrsgHXim4";
+		String db_password = "ebnyPGaRq7ixLU21daiz";
 		
 		Connection conn = null;
 		

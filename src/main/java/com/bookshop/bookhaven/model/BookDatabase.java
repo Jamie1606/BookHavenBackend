@@ -1,0 +1,135 @@
+package com.bookshop.bookhaven.model;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.apache.commons.text.StringEscapeUtils;
+
+public class BookDatabase {
+
+	// get book by isbn from database
+	public Book getBookByISBN(String isbn) throws SQLException {
+		Connection conn = null;
+		Book book = null;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM Book WHERE ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+
+			ResultSet rs = st.executeQuery();
+			if(rs.next()) {
+				book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getBookByISBN in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return book;
+	}
+
+	// insert book into database
+	public int createBook(Book book) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "INSERT INTO Book VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, book.getISBNNo());
+			st.setString(2, book.getTitle());
+			st.setInt(3, book.getPage());
+			st.setDouble(4, book.getPrice());
+			st.setString(5, book.getPublisher());
+			st.setDate(6, Date.valueOf(book.getPublicationDate().toString()));
+			st.setInt(7, book.getQty());
+			st.setDouble(8, book.getRating());
+			st.setString(9, book.getDescription());
+			st.setString(10, book.getImage());
+			st.setString(11, book.getImage3D());
+			st.setString(12, book.getStatus());
+
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in createBook in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// insert book and author into database
+	public int createBookAuthor(String isbn, ArrayList<Author> author) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			for (Author a : author) {
+				String sqlStatement = "INSERT INTO BookAuthor VALUES (?, ?)";
+				PreparedStatement st = conn.prepareStatement(sqlStatement);
+				st.setString(1, isbn);
+				st.setInt(2, a.getAuthorID());
+				rowsAffected += st.executeUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in createBookAuthor in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// insert book and genre into database
+	public int createBookGenre(String isbn, ArrayList<Genre> genre) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			for (Genre g : genre) {
+				String sqlStatement = "INSERT INTO BookGenre VALUES (?, ?)";
+				PreparedStatement st = conn.prepareStatement(sqlStatement);
+				st.setString(1, isbn);
+				st.setInt(2, g.getGenreID());
+				rowsAffected += st.executeUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in createBookGenre in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+}
