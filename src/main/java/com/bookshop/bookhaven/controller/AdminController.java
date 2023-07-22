@@ -38,8 +38,13 @@ public class AdminController {
 		try {
 			AdminDatabase admin_db = new AdminDatabase();
 			loginAdmin = admin_db.loginAdmin(admin);
-			if(admin_db.updateLoginTime(loginAdmin.getAdminID()) != 1) {
+			if(loginAdmin == null) {
 				System.out.println("..... Error in loginAdmin in AdminController .....");
+			}
+			else {
+				if(admin_db.updateLoginTime(loginAdmin.getAdminID()) != 1) {
+					System.out.println("..... Error in loginAdmin in AdminController .....");
+				}
 			}
 		}
 		catch(Exception e) {
