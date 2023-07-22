@@ -11,6 +11,47 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public class BookDatabase {
 
+	// get all book data from database
+	public ArrayList<Book> getBooks() throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> books = new ArrayList<Book>();
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			// get author data ordered by name ascending
+			String sqlStatement = "SELECT * FROM Book ORDER BY Title";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+
+			ResultSet rs = st.executeQuery();
+
+			// book data is added to arraylist
+			// escaping html special characters
+			while (rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setPublisher(rs.getString("Publisher"));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				books.add(book);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getBooks in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return books;
+	}
+
 	// get book by isbn from database
 	public Book getBookByISBN(String isbn) throws SQLException {
 		Connection conn = null;
@@ -25,7 +66,7 @@ public class BookDatabase {
 			st.setString(1, isbn);
 
 			ResultSet rs = st.executeQuery();
-			if(rs.next()) {
+			if (rs.next()) {
 				book = new Book();
 				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
 				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
@@ -108,6 +149,66 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	// get author details by ISBNNo from database
+	public ArrayList<Author> getAuthorByISBN(String isbn) throws SQLException {
+		ArrayList<Author> authorList = new ArrayList<Author>();
+		Connection conn = null;
+
+		try {
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT a.* FROM BookAuthor ba, Author a WHERE a.AuthorID = ba.AuthorID AND ba.ISBNNo = ?";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setString(1, isbn);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Author author = new Author();
+				author.setAuthorID(rs.getInt("AuthorID"));
+				author.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
+				author.setNationality(StringEscapeUtils.escapeHtml4(rs.getString("Nationality")));
+				author.setBiography(StringEscapeUtils.escapeHtml4(rs.getString("Biography")));
+				author.setLink(StringEscapeUtils.escapeHtml4(rs.getString("Link")));
+				author.setBirthDate(rs.getDate("BirthDate"));
+				authorList.add(author);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getAuthorByISBN in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+
+		return authorList;
+	}
+
+	// get genre details by ISBNNo from database
+	public ArrayList<Genre> getGenreByISBN(String isbn) throws SQLException {
+		ArrayList<Genre> genreList = new ArrayList<Genre>();
+		Connection conn = null;
+
+		try {
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT g.* FROM BookGenre bg, Genre g WHERE g.GenreID = bg.GenreID AND bg.ISBNNo = ?";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setString(1, isbn);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Genre genre = new Genre();
+				genre.setGenreID(rs.getInt("GenreID"));
+				genre.setGenre(StringEscapeUtils.escapeHtml4(rs.getString("Genre")));
+				genreList.add(genre);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getGenreByISBN in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+
+		return genreList;
+	}
+
 	// insert book and genre into database
 	public int createBookGenre(String isbn, ArrayList<Genre> genre) throws SQLException {
 		Connection conn = null;
@@ -127,6 +228,168 @@ public class BookDatabase {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("..... Error in createBookGenre in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// update book into database
+	public int updateBook(String isbn, Book book) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "UPDATE Book SET ISBNNo = ?, Title = ?, Page = ?, Price = ?, Publisher = ?, PublicationDate = ?, Qty = ?, Rating = ?, Description = ?, Image = ?, Image3D = ?, Status = ? WHERE ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, book.getISBNNo());
+			st.setString(2, book.getTitle());
+			st.setInt(3, book.getPage());
+			st.setDouble(4, book.getPrice());
+			st.setString(5, book.getPublisher());
+			st.setDate(6, Date.valueOf(book.getPublicationDate().toString()));
+			st.setInt(7, book.getQty());
+			st.setDouble(8, book.getRating());
+			st.setString(9, book.getDescription());
+			st.setString(10, book.getImage());
+			st.setString(11, book.getImage3D());
+			st.setString(12, book.getStatus());
+			st.setString(13, isbn);
+
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in updateBook in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// delete book data from Book table
+	public int deleteBook(String isbn) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "DELETE FROM Book WHERE ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in deleteBook in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// get BookAuthor rows count
+	public int getBookAuthorCount(String isbn, int authorid) throws SQLException {
+		Connection conn = null;
+		int count = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM BookAuthor WHERE ISBNNo = ? OR AuthorID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+			st.setInt(2, authorid);
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				isbn = rs.getString("ISBNNo");
+				if (isbn != null && !isbn.isEmpty())
+					count++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			count = 0;
+			System.out.println("..... Error in getBookAuthorCount in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return count;
+	}
+
+	// get BookGenre rows count
+	public int getBookGenreCount(String isbn, int genreid) throws SQLException {
+		Connection conn = null;
+		int count = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM BookGenre WHERE ISBNNo = ? OR GenreID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+			st.setInt(2, genreid);
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				isbn = rs.getString("ISBNNo");
+				if (isbn != null && !isbn.isEmpty())
+					count++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			count = 0;
+			System.out.println("..... Error in getBookGenreCount in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return count;
+	}
+
+	// delete book and author from database
+	public int deleteBookAuthor(String isbn, int authorid) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "DELETE FROM BookAuthor WHERE ISBNNo = ? OR AuthorID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+			st.setInt(2, authorid);
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in deleteBookAuthor in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// delete book and genre from database
+	public int deleteBookGenre(String isbn, int genreid) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "DELETE FROM BookGenre WHERE ISBNNo = ? OR GenreID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+			st.setInt(2, genreid);
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in deleteBookGenre in BookDatabase .....");
 		} finally {
 			conn.close();
 		}
