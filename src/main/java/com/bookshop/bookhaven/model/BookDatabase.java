@@ -11,6 +11,88 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public class BookDatabase {
 
+	// get book by isbn from database
+	public ArrayList<Book> getBookByGenreID(int id, String isbn) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> books = new ArrayList<Book>();
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT b.* FROM Book b, BookGenre bg WHERE b.ISBNNo = bg.ISBNNo AND bg.GenreID = ? AND b.ISBNNo != ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, id);
+			st.setString(2, isbn);
+
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				books.add(book);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getBookByGenreID in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return books;
+	}
+
+	// get all book data from database
+	public ArrayList<Book> getLatest(int no) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> books = new ArrayList<Book>();
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			// get author data ordered by name ascending
+			String sqlStatement = "SELECT * FROM Book WHERE Status = 'available' ORDER BY PublicationDate DESC LIMIT ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, no);
+
+			ResultSet rs = st.executeQuery();
+
+			// book data is added to arraylist
+			// escaping html special characters
+			while (rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setPublisher(rs.getString("Publisher"));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				books.add(book);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getBooks in BookDatabase .....");
+		} finally {
+			conn.close();
+		}
+		return books;
+	}
+
 	// get all book data from database
 	public ArrayList<Book> getBooks() throws SQLException {
 		Connection conn = null;

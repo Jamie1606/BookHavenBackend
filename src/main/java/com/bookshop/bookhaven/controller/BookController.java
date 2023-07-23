@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,12 +21,61 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookshop.bookhaven.model.Book;
 import com.bookshop.bookhaven.model.BookDatabase;
+import com.bookshop.bookhaven.model.Genre;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class BookController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
 
+	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
+	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+
+		try {
+			ArrayList<Genre> genreList = new ArrayList<Genre>();
+			BookDatabase book_db = new BookDatabase();
+			genreList = book_db.getGenreByISBN(isbn);
+			
+			for(int i = 0; i < genreList.size(); i++) {
+				ArrayList<Book> temp = book_db.getBookByGenreID(genreList.get(i).getGenreID(), isbn);
+				for(int j = 0; j < temp.size(); j++) {
+					bookList.add(temp.get(j));
+					if(bookList.size() == Integer.parseInt(limit)) {
+						break;
+					}
+				}
+			}
+			
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return json;
+	}
+	
+	
+	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
+	public String getLatest(@PathVariable String no) {
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+
+		try {
+			BookDatabase book_db = new BookDatabase();
+			bookList = book_db.getLatest(Integer.parseInt(no));
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return json;
+	}
+	
+	
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
 	public String getAllBook() {
 		ArrayList<Book> bookList = new ArrayList<Book>();
