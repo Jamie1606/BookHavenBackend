@@ -9,9 +9,7 @@ package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +22,12 @@ import com.bookshop.bookhaven.model.BookDatabase;
 import com.bookshop.bookhaven.model.Genre;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 public class BookController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
+	
+//	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
 
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
@@ -59,18 +60,22 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
-	public String getLatest(@PathVariable String no) {
+	public String getLatest(@PathVariable String no, HttpServletRequest request) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-
-		try {
-			BookDatabase book_db = new BookDatabase();
-			bookList = book_db.getLatest(Integer.parseInt(no));
-			ObjectMapper obj = new ObjectMapper();
-			json = obj.writeValueAsString(bookList);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+		String role = (String) request.getAttribute("role");
+		if(role != null && role.equals("ROLE_ADMIN")) {
+	
+			try {
+				BookDatabase book_db = new BookDatabase();
+				bookList = book_db.getLatest(Integer.parseInt(no));
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(bookList);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
 		return json;
 	}
@@ -78,9 +83,9 @@ public class BookController {
 	
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
 	public String getAllBook() {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getBooks();
@@ -90,6 +95,7 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+			
 		return json;
 	}
 
@@ -194,7 +200,66 @@ public class BookController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
-	public int updateBook(@PathVariable String isbn, @RequestBody Book book) {
+	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
+		
+		int row = 0;
+		String role = (String) request.getAttribute("role");
+		if(role != null && role.equals("ROLE_ADMIN")) {
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if (book_db.getBookByISBN(isbn) != null) {
+					row = book_db.updateBook(isbn, book);
+					if (row == 1) {
+						
+						// get BookAuthor row count
+						// check BookAuthor data is deleted
+						if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {		
+							
+							
+							// get BookGenre row count
+							// check BookGenre data is deleted
+							if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {	
+		
+								// check all BookAuthor is inserted
+								if(book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {		
+									
+									// check all BookGenre is inserted
+									if(book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {	
+										row = 1;									
+									}
+									// not all BookGenre are inserted
+									else {	
+										row = 0;
+									}
+								}
+								// not all BookAuthor are not inserted
+								else {	
+									row = 0;
+								}
+							}
+							// some BookGenre are not deleted
+							else {	
+								row = 0;
+							}
+						}
+						// some BookAuthor are not deleted
+						else {	
+							row = 0;
+						}
+					}
+				} 
+				// invalid isbn (not existing in Book table)
+				else {
+					row = 0; 	 
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -204,59 +269,8 @@ public class BookController {
 //		catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if (book_db.getBookByISBN(isbn) != null) {
-				row = book_db.updateBook(isbn, book);
-				if (row == 1) {
-					
-					// get BookAuthor row count
-					// check BookAuthor data is deleted
-					if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {		
-						
-						
-						// get BookGenre row count
-						// check BookGenre data is deleted
-						if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {	
-	
-							// check all BookAuthor is inserted
-							if(book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {		
-								
-								// check all BookGenre is inserted
-								if(book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {	
-									row = 1;									
-								}
-								// not all BookGenre are inserted
-								else {	
-									row = 0;
-								}
-							}
-							// not all BookAuthor are not inserted
-							else {	
-								row = 0;
-							}
-						}
-						// some BookGenre are not deleted
-						else {	
-							row = 0;
-						}
-					}
-					// some BookAuthor are not deleted
-					else {	
-						row = 0;
-					}
-				}
-			} 
-			// invalid isbn (not existing in Book table)
-			else {
-				row = 0; 	 
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
-		}
-		return row;
+		
+		return ResponseEntity.ok().body(row);
 	}
 	
 	
