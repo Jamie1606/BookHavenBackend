@@ -11,11 +11,20 @@ import java.sql.Date;
 
 public class Admin {
 	private int adminID;
+	private String username;
 	private String name;
 	private String email;
 	private String password;
 	private Date lastActive;
 	
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public int getAdminID() {
 		return adminID;
 	}

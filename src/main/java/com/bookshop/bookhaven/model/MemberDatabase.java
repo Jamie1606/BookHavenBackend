@@ -17,8 +17,84 @@ import java.util.ArrayList;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-
 public class MemberDatabase {
+
+	
+	// get member info for userdetails by email
+	public boolean checkUserByEmail(String email) throws SQLException {
+		Connection conn = null;
+		boolean condition = false;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM Member WHERE Email = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, email);
+
+			ResultSet rs = st.executeQuery();
+
+			// escaping html special characters
+			if (rs.next()) {
+				condition = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in loadUserByUsername in MemberDatabase .....");
+		} finally {
+			conn.close();
+		}
+
+		return condition;
+	}
+
+	// update member log in time
+	public int updateLoginTime(int id) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "UPDATE Member SET LastActive = CURRENT_TIMESTAMP WHERE MemberID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, id);
+
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			System.out.print(".......memberDB : " + e);
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// login as member
+	public Member loginMember(String email, String password) {
+		Connection conn = null;
+		Member loginMember = null;
+
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Member WHERE Email = ? AND Password = ?";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setString(1, email);
+			pstmt.setString(2, password);
+
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				loginMember = new Member();
+				loginMember.setMemberID(rs.getInt("MemberID"));
+				loginMember.setEmail(rs.getString("Email"));
+			}
+		} catch (Exception e) {
+			System.out.print(".......memberDB : " + e);
+		}
+
+		return loginMember;
+	}
 
 	// check member email duplication
 	public boolean checkMemberEmailExists(String email) throws SQLException {
@@ -97,14 +173,15 @@ public class MemberDatabase {
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				uBean = new Member();
-				uBean.setName( StringEscapeUtils.escapeHtml4 (rs.getString("Name")));
+				uBean.setMemberID(rs.getInt("MemberID"));
+				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
 				uBean.setGender(rs.getString("Gender").charAt(0));
 				uBean.setBirthDate(rs.getDate("BirthDate"));
-				uBean.setPhone( StringEscapeUtils.escapeHtml4 (rs.getString("Phone")));
-				uBean.setAddress( StringEscapeUtils.escapeHtml4 (rs.getString("Address")));
-				uBean.setEmail( StringEscapeUtils.escapeHtml4 (rs.getString("Email")));
-				uBean.setPassword( StringEscapeUtils.escapeHtml4 (rs.getString("Password")));
-				uBean.setImage( StringEscapeUtils.escapeHtml4 (rs.getString("Image")));
+				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
+				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
+				uBean.setEmail(StringEscapeUtils.escapeHtml4(rs.getString("Email")));
+				uBean.setPassword(StringEscapeUtils.escapeHtml4(rs.getString("Password")));
+				uBean.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
 				uBean.setLastActive(rs.getDate("LastActive"));
 				memberList.add(uBean);
 				System.out.println(".....done writing " + uBean.getMemberID() + " to List!.....");
@@ -131,14 +208,15 @@ public class MemberDatabase {
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
 				uBean = new Member();
-				uBean.setName( StringEscapeUtils.escapeHtml4 (rs.getString("Name")));
+				uBean.setMemberID(rs.getInt("MemberID"));
+				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
 				uBean.setGender(rs.getString("Gender").charAt(0));
 				uBean.setBirthDate(rs.getDate("BirthDate"));
-				uBean.setPhone( StringEscapeUtils.escapeHtml4 (rs.getString("Phone")));
-				uBean.setAddress( StringEscapeUtils.escapeHtml4 (rs.getString("Address")));
-				uBean.setEmail( StringEscapeUtils.escapeHtml4 (rs.getString("Email")));
-				uBean.setPassword( StringEscapeUtils.escapeHtml4 (rs.getString("Password")));
-				uBean.setImage( StringEscapeUtils.escapeHtml4 (rs.getString("Image")));
+				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
+				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
+				uBean.setEmail(StringEscapeUtils.escapeHtml4(rs.getString("Email")));
+				uBean.setPassword(StringEscapeUtils.escapeHtml4(rs.getString("Password")));
+				uBean.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
 				uBean.setLastActive(rs.getDate("LastActive"));
 				System.out.println(".....done writing to bean!.....");
 
@@ -205,8 +283,8 @@ public class MemberDatabase {
 		}
 		return rec;
 	}
-	
-	//delete member from db by ID
+
+	// delete member from db by ID
 	public int deleteMember(int ID) throws SQLException {
 		Connection conn = null;
 		int nrow = 0;
@@ -217,7 +295,7 @@ public class MemberDatabase {
 			pstmt.setInt(1, ID);
 			nrow = pstmt.executeUpdate();
 			System.out.println("...in MemberDB-done delete member data...");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println(".......memberDB : " + e);
 		} finally {
 			conn.close();

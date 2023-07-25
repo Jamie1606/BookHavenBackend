@@ -24,6 +24,7 @@ public class AuthorController {
 	
 	@RequestMapping(path = "/getAllAuthor", method = RequestMethod.GET)
 	public ArrayList<Author> getAllAuthor() {
+		
 		ArrayList<Author> authorList = new ArrayList<Author>();
 		
 		try {
