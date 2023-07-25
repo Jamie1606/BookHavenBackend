@@ -4,6 +4,7 @@
 //Group       : 10
 //Date		  : 20 .7.2023
 //Description : utility bean relating to search functions
+
 package com.bookshop.bookhaven.model;
 
 import java.sql.Connection;
@@ -22,7 +23,7 @@ public class SearchDatabase {
 		Connection conn = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement="SELECT b.\"ISBNNo\", b.\"Title\",b.\"Image\",b.\"Status\", a.\"AuthorID\", a.\"Name\"  FROM \"public\".\"Book\" AS b JOIN \"public\".\"BookAuthor\" AS ba ON b.\"ISBNNo\"=ba.\"ISBNNo\" JOIN \"public\".\"Author\" AS a ON ba.\"AuthorID\"=a.\"AuthorID\" WHERE Lower(a.\"Name\") LIKE ?";
+			String sqlStatement="SELECT b.*  FROM Book AS b JOIN BookAuthor AS ba ON b.ISBNNo=ba.ISBNNo JOIN Author AS a ON ba.AuthorID=a.AuthorID WHERE Lower(a.Name) LIKE ?";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStatement);
 			String name="%"+authorName.toLowerCase()+"%";
 			pstmt.setString(1,name);
@@ -58,7 +59,7 @@ public class SearchDatabase {
 		Connection conn = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement="SELECT * FROM \"public\".\"Book\" WHERE Lower(\"Title\") LIKE ?";
+			String sqlStatement="SELECT * FROM Book WHERE Lower(Title) LIKE ?";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStatement);
 			String title="%"+bookTitle.toLowerCase()+"%";
 			pstmt.setString(1,title);
