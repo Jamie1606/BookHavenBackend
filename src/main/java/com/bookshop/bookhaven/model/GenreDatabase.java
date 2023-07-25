@@ -18,20 +18,20 @@ import org.apache.commons.text.StringEscapeUtils;
 public class GenreDatabase {
 
 	// select all genre from db
-	public ArrayList<Genre> getGenre() throws SQLException {
+	public ArrayList<Genre> getAllGenre() throws SQLException {
 		Connection conn = null;
 		ArrayList<Genre> genreList = new ArrayList<>();
 		Genre uBean = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "SELECT * FROM \"public\".\"Genre\" ORDER BY \"GenreID\"";
+			String sqlStatement = "SELECT * FROM Genre ORDER BY GenreID";
 
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				uBean = new Genre();
 				uBean.setGenreID(rs.getInt("GenreID"));
-				uBean.setGenre(rs.getString("Genre"));
+				uBean.setGenre(StringEscapeUtils.escapeHtml4(rs.getString("Genre")));
 				genreList.add(uBean);
 				System.out.println(".....done writing" + uBean.getGenre() + " to List!.....");
 			}
@@ -49,7 +49,7 @@ public class GenreDatabase {
 		Genre uBean = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "SELECT * FROM \"public\".\"Genre\" WHERE \"GenreID\"=?";
+			String sqlStatement = "SELECT * FROM Genre WHERE GenreID=?";
 
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setInt(1, ID);
@@ -74,7 +74,7 @@ public class GenreDatabase {
 		int nrow = 0;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "INSERT INTO \"public\".\"Genre\" (\"Genre\") VALUES (?)";
+			String sqlStatement = "INSERT INTO Genre (Genre) VALUES (?)";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setString(1, genre.getGenre());
 			nrow = pstmt.executeUpdate();
@@ -93,7 +93,7 @@ public class GenreDatabase {
 		int nrow = 0;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "UPDATE \"public\".\"Genre\" SET \"Genre\"=? WHERE \"GenreID\"=?";
+			String sqlStatement = "UPDATE Genre SET Genre=? WHERE GenreID=?";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setString(1, genre.getGenre());
 			pstmt.setInt(2, genre.getGenreID());
@@ -113,12 +113,12 @@ public class GenreDatabase {
 		int nrow = 0;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "DELETE FROM \"public\".\"Genre\" WHERE \"GenreID\" = ?";
+			String sqlStatement = "DELETE FROM Genre WHERE GenreID = ?";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setInt(1, ID);
 
 			nrow = pstmt.executeUpdate();
-			System.out.println("...in MemberDB-done delete member password...");
+			System.out.println("...in GenreDB-done delete genre...");
 		} catch (Exception e) {
 			System.out.println(".......genreDB : " + e);
 		} finally {
@@ -133,7 +133,7 @@ public class GenreDatabase {
 		Book uBean = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "SELECT * FROM \"public\".\"Book\" b JOIN \"public\".\"BookGenre\" g ON b.\"ISBNNo\" = g.\"ISBNNo\" WHERE g.\"GenreID\"=? ;";
+			String sqlStatement = "SELECT * FROM Book b JOIN BookGenre g ON b.ISBNNo = g.ISBNNo WHERE g.GenreID=? ;";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setInt(1, ID);
 			ResultSet rs = pstmt.executeQuery();
@@ -162,34 +162,4 @@ public class GenreDatabase {
 		return bookList;
 	}
 
-	// get all genre data from database
-	public ArrayList<Genre> getGenres() throws SQLException {
-		Connection conn = null;
-		ArrayList<Genre> genres = new ArrayList<Genre>();
-		try {
-			// connecting to database
-			conn = DatabaseConnection.getConnection();
-
-			// get genre data ordered by genre ascending
-			String sqlStatement = "SELECT * FROM Genre ORDER BY Genre";
-			PreparedStatement st = conn.prepareStatement(sqlStatement);
-
-			ResultSet rs = st.executeQuery();
-
-			// genre data is added to genrelist
-			// escaping html special characters
-			while (rs.next()) {
-				Genre genre = new Genre();
-				genre.setGenreID(rs.getInt("GenreID"));
-				genre.setGenre(StringEscapeUtils.escapeHtml4(rs.getString("Genre")));
-				genres.add(genre);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("..... Error in getGenres in GenreDatabase .....");
-		} finally {
-			conn.close();
-		}
-		return genres;
-	}
 }
