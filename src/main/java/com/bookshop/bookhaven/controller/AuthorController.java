@@ -9,6 +9,9 @@ package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +31,7 @@ public class AuthorController {
 	
 	
 	@RequestMapping(path = "/getAllAuthor", method = RequestMethod.GET)
+	@Cacheable("authorList")
 	public String getAllAuthor() {
 		
 		String json = null;
@@ -48,6 +52,7 @@ public class AuthorController {
 	
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
+	@Cacheable("authorById")
 	public String getAuthor(@PathVariable("id") String authorid) {
 		
 		Author author = new Author();
@@ -71,6 +76,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.POST,
 			consumes = "application/json",
 			path = "/createAuthor")
+	@CachePut({"authorList", "authorById"})
 	public ResponseEntity<?> createAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		String role = (String) request.getAttribute("role");
@@ -96,6 +102,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.PUT,
 			consumes = "application/json",
 			path = "/updateAuthor")
+	@CachePut({"authorList", "authorById"})
 	public ResponseEntity<?> updateAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		int row = 0;
@@ -119,6 +126,7 @@ public class AuthorController {
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteAuthor/{id}")
+	@CacheEvict({"authorList", "authorById"})
 	public ResponseEntity<?> deleteAuthor(@PathVariable("id") String authorid, HttpServletRequest request) {
 		
 		int row = 0;

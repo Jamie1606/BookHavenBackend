@@ -89,6 +89,14 @@
 		    <artifactId>spring-security-ldap</artifactId>
 		    <version>6.1.2</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
+		<dependency>
+		    <groupId>com.github.ben-manes.caffeine</groupId>
+		    <artifactId>caffeine</artifactId>
+		    <version>3.1.7</version>
+		</dependency>
+
 
 		
 		<!-- Spring Security -->
