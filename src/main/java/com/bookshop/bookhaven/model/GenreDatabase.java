@@ -33,7 +33,6 @@ public class GenreDatabase {
 				uBean.setGenreID(rs.getInt("GenreID"));
 				uBean.setGenre(StringEscapeUtils.escapeHtml4(rs.getString("Genre")));
 				genreList.add(uBean);
-				System.out.println(".....done writing" + uBean.getGenre() + " to List!.....");
 			}
 		} catch (Exception e) {
 			System.out.println(".......genreDB : " + e);

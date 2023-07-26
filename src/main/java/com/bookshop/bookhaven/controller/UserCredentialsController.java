@@ -12,6 +12,7 @@ import com.bookshop.bookhaven.model.AdminDatabase;
 import com.bookshop.bookhaven.model.Member;
 import com.bookshop.bookhaven.model.MemberDatabase;
 import com.bookshop.bookhaven.model.UserCredentials;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class UserCredentialsController {
@@ -21,10 +22,13 @@ public class UserCredentialsController {
 	
 	
 	@RequestMapping(method = RequestMethod.POST, path = "/userlogin", consumes = "application/json")
-	public UserCredentials login(@RequestBody UserCredentials userCredentials) {
+	public String login(@RequestBody UserCredentials userCredentials) {
+		
+		String json = null;
 		Admin loginAdmin = null;
 		Member loginMember = null;
 		UserCredentials loginuserCredentials = null;
+		ObjectMapper obj = new ObjectMapper();
 		
 		try {
 			MemberDatabase member_db = new MemberDatabase();
@@ -41,10 +45,9 @@ public class UserCredentialsController {
 					String token = jwtTokenUtil.generateToken(loginAdmin.getAdminID() + "", loginAdmin.getEmail(), "ROLE_ADMIN");
 					
 					loginuserCredentials = new UserCredentials();
-					loginuserCredentials.setEmail(loginAdmin.getEmail());
 					loginuserCredentials.setRole("ROLE_ADMIN");
 					loginuserCredentials.setToken(token);
-					System.out.println(token);
+					json = obj.writeValueAsString(loginuserCredentials);
 					
 					if(admin_db.updateLoginTime(loginAdmin.getAdminID()) != 1) {
 						System.out.println("..... Error in loginAdmin in AdminController .....");
@@ -55,9 +58,9 @@ public class UserCredentialsController {
 				String token = jwtTokenUtil.generateToken(loginMember.getMemberID() + "", loginMember.getEmail(), "ROLE_MEMBER");
 				
 				loginuserCredentials = new UserCredentials();
-				loginuserCredentials.setEmail(loginMember.getEmail());
 				loginuserCredentials.setRole("ROLE_MEMBER");
 				loginuserCredentials.setToken(token);
+				json = obj.writeValueAsString(loginuserCredentials);
 				
 				if(member_db.updateLoginTime(loginMember.getMemberID()) != 1) {
 					System.out.println("..... Error in loginMember in MemberController .....");
@@ -68,6 +71,6 @@ public class UserCredentialsController {
 			e.printStackTrace();
 			return null;
 		}
-		return loginuserCredentials;
+		return json;
 	}
 }
