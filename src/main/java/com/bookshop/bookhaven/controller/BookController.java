@@ -2,8 +2,8 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 11.7.2023
-// Description	: middleware for author
+// Date			: 26.7.2023
+// Description	: middleware for book
 
 package com.bookshop.bookhaven.controller;
 
@@ -29,8 +29,10 @@ public class BookController {
 	
 //	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
 
+	
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -55,28 +57,27 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
-	public String getLatest(@PathVariable String no, HttpServletRequest request) {
+	public String getLatest(@PathVariable String no) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-		String role = (String) request.getAttribute("role");
-		if(role != null && role.equals("ROLE_ADMIN")) {
 	
-			try {
-				BookDatabase book_db = new BookDatabase();
-				bookList = book_db.getLatest(Integer.parseInt(no));
-				ObjectMapper obj = new ObjectMapper();
-				json = obj.writeValueAsString(bookList);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
+		try {
+			BookDatabase book_db = new BookDatabase();
+			bookList = book_db.getLatest(Integer.parseInt(no));
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
+		
 		return json;
 	}
 	
@@ -99,8 +100,10 @@ public class BookController {
 		return json;
 	}
 
+	
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
 	public String getAllBookDetails() {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -119,11 +122,14 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
-	public ResponseEntity<?> getBook(@PathVariable String isbn) {
+	public String getBook(@PathVariable String isbn) {
+		
 		Book book = new Book();
 		String json = null;
 
@@ -134,13 +140,16 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.badRequest().body("Book does not exist!");
+			return null;
 		}
-		return ResponseEntity.ok().body(json);
+		
+		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
-	public ResponseEntity<?> getBookDetails(@PathVariable String isbn) {
+	public String getBookDetails(@PathVariable String isbn) {
+		
 		Book book = new Book();
 		String json = null;
 
@@ -155,13 +164,19 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.badRequest().body("Book does not exist!");
+			return null;
 		}
-		return ResponseEntity.ok().body(json);
+		
+		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
-	public int createBook(@RequestBody Book book) {
+	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
+		
+		int row = 0;
+		String role = (String) request.getAttribute("role");
+		if(role != null && role.equals("ROLE_ADMIN")) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -171,32 +186,35 @@ public class BookController {
 //		catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if (book_db.getBookByISBN(book.getISBNNo()) == null) {
-				row = book_db.createBook(book);
-				if (row == 1) {
-					if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {
-						if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {
-							row = 1;
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if (book_db.getBookByISBN(book.getISBNNo()) == null) {
+					row = book_db.createBook(book);
+					if (row == 1) {
+						if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {
+							if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {
+								row = 1;
+							}
+							else {
+								row = -2;
+							}
 						}
 						else {
 							row = -2;
 						}
 					}
-					else {
-						row = -2;
-					}
+				} else {
+					row = -1; // setting -1 for row (duplicate isbnno)
 				}
-			} else {
-				row = -1; // setting -1 for row (duplicate isbnno)
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(row);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
 		}
-		return row;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(row);
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
@@ -260,6 +278,14 @@ public class BookController {
 		else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
+		
+		return ResponseEntity.ok().body(row);
+	}
+	
+	
+	
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
+	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -270,36 +296,29 @@ public class BookController {
 //			e.printStackTrace();
 //		}
 		
-		return ResponseEntity.ok().body(row);
-	}
-	
-	
-	
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
-	public int deleteBook(@PathVariable String isbn) {
-//		try {
-//			ObjectMapper obj = new ObjectMapper();
-//			String jsonBook = obj.writeValueAsString(book);
-//			LOGGER.info("JSON data: ", jsonBook);
-//			System.out.println(jsonBook);
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
-		// image delete left
 		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-				if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
-					row = book_db.deleteBook(isbn);
+		String role = (String) request.getAttribute("role");
+		
+		if(role != null && role.equals("ROLE_ADMIN")) {
+			// image delete left
+			
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+					if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+						row = book_db.deleteBook(isbn);
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
 		}
-		return row;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+			
+		return ResponseEntity.ok().body(row);
 	}
 	
 

@@ -19,23 +19,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookshop.bookhaven.model.Genre;
 import com.bookshop.bookhaven.model.GenreDatabase;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.bookshop.bookhaven.model.Book;
 
 @RestController
 public class GenreController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getAllGenre")
-	public ArrayList<Genre> getAllGenre() {
+	public String getAllGenre() {
+		
+		String json = null;
 		ArrayList<Genre> genreList = new ArrayList<Genre>();
 
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
 			genreList = genre_db.getAllGenre();
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(genreList);
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
 		}
-		return genreList;
+		
+		return json;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getGenre/{uid}")
