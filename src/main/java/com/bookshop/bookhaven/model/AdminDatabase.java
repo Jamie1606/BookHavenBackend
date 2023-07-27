@@ -13,6 +13,35 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public class AdminDatabase {
 
+	// get admin info for userdetails by username
+	public boolean checkUserByEmail(String email) throws SQLException {
+		Connection conn = null;
+		boolean condition = false;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM Admin WHERE Email = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, email);
+
+			ResultSet rs = st.executeQuery();
+
+			// escaping html special characters
+			if (rs.next()) {
+				condition = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in loadUserByUsername in AdminDatabase .....");
+		} finally {
+			conn.close();
+		}
+
+		return condition;
+	}
+
 	// get one admin admin data by adminID from database
 	public Admin getAdmin(int id) throws SQLException {
 		Connection conn = null;
@@ -51,18 +80,18 @@ public class AdminDatabase {
 	}
 
 	// log in as admin
-	public Admin loginAdmin(Admin admin) throws SQLException {
+	public Admin loginAdmin(String email, String password) throws SQLException {
 		Admin loginAdmin = null;
 		Connection conn = null;
-		
+
 		try {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 
 			String sqlStatement = "SELECT * FROM Admin WHERE Email = ? AND Password = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setString(1, admin.getEmail());
-			st.setString(2, admin.getPassword());
+			st.setString(1, email);
+			st.setString(2, password);
 
 			ResultSet rs = st.executeQuery();
 
@@ -70,7 +99,7 @@ public class AdminDatabase {
 			if (rs.next()) {
 				loginAdmin = new Admin();
 				loginAdmin.setAdminID(rs.getInt("AdminID"));
-				loginAdmin.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
+				loginAdmin.setEmail(rs.getString("Email"));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -80,12 +109,12 @@ public class AdminDatabase {
 		}
 		return loginAdmin;
 	}
-	
+
 	// update admin log in time
 	public int updateLoginTime(int id) throws SQLException {
 		Connection conn = null;
 		int rowsAffected = 0;
-		
+
 		try {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();

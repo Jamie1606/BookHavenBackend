@@ -2,16 +2,17 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 11.7.2023
-// Description	: middleware for author
+// Date			: 26.7.2023
+// Description	: middleware for book
 
 package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,12 +25,18 @@ import com.bookshop.bookhaven.model.BookDatabase;
 import com.bookshop.bookhaven.model.Genre;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 public class BookController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
+	
+//	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
 
+	
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
+	@Cacheable("relatedBookList")
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -54,15 +61,18 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
+	@Cacheable("latestBookList")
 	public String getLatest(@PathVariable String no) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-
+	
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getLatest(Integer.parseInt(no));
@@ -72,15 +82,17 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 	
 	
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
+	@Cacheable("bookList")
 	public String getAllBook() {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getBooks();
@@ -90,11 +102,15 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+			
 		return json;
 	}
 
+	
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
+	@Cacheable("bookListDetails")
 	public String getAllBookDetails() {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -113,11 +129,15 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
-	public ResponseEntity<?> getBook(@PathVariable String isbn) {
+	@Cacheable("bookByISBN")
+	public String getBook(@PathVariable String isbn) {
+		
 		Book book = new Book();
 		String json = null;
 
@@ -128,13 +148,17 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.badRequest().body("Book does not exist!");
+			return null;
 		}
-		return ResponseEntity.ok().body(json);
+		
+		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
-	public ResponseEntity<?> getBookDetails(@PathVariable String isbn) {
+	@Cacheable("bookByISBNDetails")
+	public String getBookDetails(@PathVariable String isbn) {
+		
 		Book book = new Book();
 		String json = null;
 
@@ -149,13 +173,20 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.badRequest().body("Book does not exist!");
+			return null;
 		}
-		return ResponseEntity.ok().body(json);
+		
+		return json;
 	}
 
+	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
-	public int createBook(@RequestBody Book book) {
+	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
+		
+		int row = 0;
+		String role = (String) request.getAttribute("role");
+		if(role != null && role.equals("ROLE_ADMIN")) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -165,104 +196,108 @@ public class BookController {
 //		catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if (book_db.getBookByISBN(book.getISBNNo()) == null) {
-				row = book_db.createBook(book);
-				if (row == 1) {
-					if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {
-						if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {
-							row = 1;
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if (book_db.getBookByISBN(book.getISBNNo()) == null) {
+					row = book_db.createBook(book);
+					if (row == 1) {
+						if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {
+							if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {
+								row = 1;
+							}
+							else {
+								row = -2;
+							}
 						}
 						else {
 							row = -2;
 						}
 					}
-					else {
-						row = -2;
-					}
+				} else {
+					row = -1; // setting -1 for row (duplicate isbnno)
 				}
-			} else {
-				row = -1; // setting -1 for row (duplicate isbnno)
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(row);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
 		}
-		return row;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(row);
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
-	public int updateBook(@PathVariable String isbn, @RequestBody Book book) {
-//		try {
-//			ObjectMapper obj = new ObjectMapper();
-//			String jsonBook = obj.writeValueAsString(book);
-//			LOGGER.info("JSON data: ", jsonBook);
-//			System.out.println(jsonBook);
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
+	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
+		
 		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if (book_db.getBookByISBN(isbn) != null) {
-				row = book_db.updateBook(isbn, book);
-				if (row == 1) {
-					
-					// get BookAuthor row count
-					// check BookAuthor data is deleted
-					if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {		
+		String role = (String) request.getAttribute("role");
+		if(role != null && role.equals("ROLE_ADMIN")) {
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if (book_db.getBookByISBN(isbn) != null) {
+					row = book_db.updateBook(isbn, book);
+					if (row == 1) {
 						
-						
-						// get BookGenre row count
-						// check BookGenre data is deleted
-						if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {	
-	
-							// check all BookAuthor is inserted
-							if(book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {		
-								
-								// check all BookGenre is inserted
-								if(book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {	
-									row = 1;									
+						// get BookAuthor row count
+						// check BookAuthor data is deleted
+						if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {		
+							
+							
+							// get BookGenre row count
+							// check BookGenre data is deleted
+							if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {	
+		
+								// check all BookAuthor is inserted
+								if(book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {		
+									
+									// check all BookGenre is inserted
+									if(book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {	
+										row = 1;									
+									}
+									// not all BookGenre are inserted
+									else {	
+										row = 0;
+									}
 								}
-								// not all BookGenre are inserted
+								// not all BookAuthor are not inserted
 								else {	
 									row = 0;
 								}
 							}
-							// not all BookAuthor are not inserted
+							// some BookGenre are not deleted
 							else {	
 								row = 0;
 							}
 						}
-						// some BookGenre are not deleted
+						// some BookAuthor are not deleted
 						else {	
 							row = 0;
 						}
 					}
-					// some BookAuthor are not deleted
-					else {	
-						row = 0;
-					}
+				} 
+				// invalid isbn (not existing in Book table)
+				else {
+					row = 0; 	 
 				}
-			} 
-			// invalid isbn (not existing in Book table)
-			else {
-				row = 0; 	 
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
 		}
-		return row;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(row);
 	}
 	
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
-	public int deleteBook(@PathVariable String isbn) {
+	@CacheEvict({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -272,20 +307,30 @@ public class BookController {
 //		catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		// image delete left
+		
 		int row = 0;
-		try {
-			BookDatabase book_db = new BookDatabase();
-			if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-				if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
-					row = book_db.deleteBook(isbn);
+		String role = (String) request.getAttribute("role");
+		
+		if(role != null && role.equals("ROLE_ADMIN")) {
+			// image delete left
+			
+			try {
+				BookDatabase book_db = new BookDatabase();
+				if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+					if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+						row = book_db.deleteBook(isbn);
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
 		}
-		return row;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+			
+		return ResponseEntity.ok().body(row);
 	}
 	
 

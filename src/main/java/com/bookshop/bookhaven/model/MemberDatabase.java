@@ -14,6 +14,83 @@ import org.apache.commons.text.StringEscapeUtils;
 
 public class MemberDatabase {
 
+	
+	// get member info for userdetails by email
+	public boolean checkUserByEmail(String email) throws SQLException {
+		Connection conn = null;
+		boolean condition = false;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "SELECT * FROM Member WHERE Email = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, email);
+
+			ResultSet rs = st.executeQuery();
+
+			// escaping html special characters
+			if (rs.next()) {
+				condition = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in loadUserByUsername in MemberDatabase .....");
+		} finally {
+			conn.close();
+		}
+
+		return condition;
+	}
+
+	// update member log in time
+	public int updateLoginTime(int id) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			// connecting to database
+			conn = DatabaseConnection.getConnection();
+
+			String sqlStatement = "UPDATE Member SET LastActive = CURRENT_TIMESTAMP WHERE MemberID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, id);
+
+			rowsAffected = st.executeUpdate();
+		} catch (Exception e) {
+			System.out.print(".......memberDB : " + e);
+		} finally {
+			conn.close();
+		}
+		return rowsAffected;
+	}
+
+	// login as member
+	public Member loginMember(String email, String password) {
+		Connection conn = null;
+		Member loginMember = null;
+
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Member WHERE Email = ? AND Password = ?";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setString(1, email);
+			pstmt.setString(2, password);
+
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				loginMember = new Member();
+				loginMember.setMemberID(rs.getInt("MemberID"));
+				loginMember.setEmail(rs.getString("Email"));
+			}
+		} catch (Exception e) {
+			System.out.print(".......memberDB : " + e);
+		}
+
+		return loginMember;
+	}
+
 	// check member email duplication
 	public boolean checkMemberEmailExists(String email) throws SQLException {
 		Connection conn = null;
