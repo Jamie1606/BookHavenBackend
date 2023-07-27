@@ -9,6 +9,9 @@ package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +34,7 @@ public class BookController {
 
 	
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
+	@Cacheable("relatedBookList")
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -63,6 +67,7 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
+	@Cacheable("latestBookList")
 	public String getLatest(@PathVariable String no) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -83,6 +88,7 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
+	@Cacheable("bookList")
 	public String getAllBook() {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -102,6 +108,7 @@ public class BookController {
 
 	
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
+	@Cacheable("bookListDetails")
 	public String getAllBookDetails() {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -128,6 +135,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
+	@Cacheable("bookByISBN")
 	public String getBook(@PathVariable String isbn) {
 		
 		Book book = new Book();
@@ -148,6 +156,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
+	@Cacheable("bookByISBNDetails")
 	public String getBookDetails(@PathVariable String isbn) {
 		
 		Book book = new Book();
@@ -172,6 +181,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
+	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
 	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -218,6 +228,7 @@ public class BookController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
+	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
 	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -285,6 +296,7 @@ public class BookController {
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
+	@CacheEvict({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
