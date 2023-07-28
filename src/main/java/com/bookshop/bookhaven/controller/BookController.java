@@ -8,6 +8,7 @@
 package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -34,7 +35,7 @@ public class BookController {
 
 	
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
-	@Cacheable("relatedBookList")
+	@Cacheable(value = "bookList", key = "#isbn + #limit + '-related'")
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -44,16 +45,15 @@ public class BookController {
 			ArrayList<Genre> genreList = new ArrayList<Genre>();
 			BookDatabase book_db = new BookDatabase();
 			genreList = book_db.getGenreByISBN(isbn);
+			int[] genreID = new int[genreList.size()];
 			
 			for(int i = 0; i < genreList.size(); i++) {
-				ArrayList<Book> temp = book_db.getBookByGenreID(genreList.get(i).getGenreID(), isbn);
-				for(int j = 0; j < temp.size(); j++) {
-					bookList.add(temp.get(j));
-					if(bookList.size() == Integer.parseInt(limit)) {
-						break;
-					}
-				}
+				genreID[i] = genreList.get(i).getGenreID();
 			}
+			
+			bookList = book_db.getBookByGenreID(genreID, isbn);
+			Collections.shuffle(bookList);
+			bookList = new ArrayList<> (bookList.subList(0, Math.min(Integer.parseInt(limit), bookList.size())));
 			
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
@@ -67,7 +67,7 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
-	@Cacheable("latestBookList")
+	@Cacheable(value = "bookList", key = "#no + '-latest'")
 	public String getLatest(@PathVariable String no) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -88,7 +88,7 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
-	@Cacheable("bookList")
+	@Cacheable(value = "bookList", key = "'simple'")
 	public String getAllBook() {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -108,7 +108,7 @@ public class BookController {
 
 	
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
-	@Cacheable("bookListDetails")
+	@Cacheable(value = "bookList", key="'details'")
 	public String getAllBookDetails() {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -135,7 +135,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
-	@Cacheable("bookByISBN")
+	@Cacheable(value = "bookByISBN", key="#isbn + '-simple'")
 	public String getBook(@PathVariable String isbn) {
 		
 		Book book = new Book();
@@ -156,7 +156,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
-	@Cacheable("bookByISBNDetails")
+	@Cacheable(value = "bookByISBN", key="#isbn + '-details'")
 	public String getBookDetails(@PathVariable String isbn) {
 		
 		Book book = new Book();
@@ -181,7 +181,7 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
-	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	@CachePut({"bookList", "bookByISBN"})
 	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -228,7 +228,7 @@ public class BookController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
-	@CachePut({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	@CachePut({"bookList", "bookByISBN"})
 	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -296,7 +296,7 @@ public class BookController {
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
-	@CacheEvict({"bookList", "bookListDetails", "bookByISBN", "bookByISBNDetails"})
+	@CacheEvict({"bookList", "bookByISBN"})
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
