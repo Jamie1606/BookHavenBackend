@@ -12,18 +12,30 @@ import org.apache.commons.text.StringEscapeUtils;
 public class BookDatabase {
 
 	// get book by isbn from database
-	public ArrayList<Book> getBookByGenreID(int id, String isbn) throws SQLException {
+	public ArrayList<Book> getBookByGenreID(int[] id, String isbn) throws SQLException {
 		Connection conn = null;
 		ArrayList<Book> books = new ArrayList<Book>();
 
 		try {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
+			String genreIDstr = "";
+			
+			for(int i = 0; i < id.length; i++) {
+				if(i == id.length - 1) {
+					genreIDstr += "?";
+				}
+				else {
+					genreIDstr += "?, ";
+				}
+			}
 
-			String sqlStatement = "SELECT b.* FROM Book b, BookGenre bg WHERE b.ISBNNo = bg.ISBNNo AND bg.GenreID = ? AND b.ISBNNo != ?";
+			String sqlStatement = "SELECT b.* FROM Book b, BookGenre bg WHERE b.ISBNNo = bg.ISBNNo AND bg.GenreID IN (" + genreIDstr + ") AND b.ISBNNo != ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setInt(1, id);
-			st.setString(2, isbn);
+			for(int i = 0; i < id.length; i++) {
+				st.setInt(i + 1, id[i]);
+			}
+			st.setString(id.length + 1, isbn);
 
 			ResultSet rs = st.executeQuery();
 			while (rs.next()) {
