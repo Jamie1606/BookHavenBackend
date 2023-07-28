@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 16.7.2023
+// Description	: database functions to get keys and token
+
 package com.bookshop.bookhaven.model;
 
 import java.sql.Connection;

@@ -2,8 +2,8 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 10.7.2023
-// Description	: to store book data from database 
+// Date			: 29.7.2023
+// Description	: to store book data
 
 package com.bookshop.bookhaven.model;
 
@@ -19,13 +19,22 @@ public class Book {
 	private Date publicationDate;
 	private int qty;
 	private double rating;
+	private int soldqty;
 	private String description;
 	private String image;
 	private String image3D;
 	private String status;
 	private ArrayList<Author> authors;
 	private ArrayList<Genre> genres;
-	
+
+	public int getSoldqty() {
+		return soldqty;
+	}
+
+	public void setSoldqty(int soldqty) {
+		this.soldqty = soldqty;
+	}
+
 	public String getISBNNo() {
 		return isbnno;
 	}

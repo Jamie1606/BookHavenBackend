@@ -2,7 +2,7 @@
 // Admin No		: 2235035, 2235022
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 14.7.2023
+// Date			: 16.7.2023
 // Description	: database configuration
 
 package com.bookshop.bookhaven.model;

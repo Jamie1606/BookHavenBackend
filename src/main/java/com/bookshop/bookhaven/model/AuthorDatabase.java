@@ -2,8 +2,8 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 11.7.2023
-// Description	: all database functions related to author
+// Date			: 22.7.2023
+// Description	: author related database functions
 
 package com.bookshop.bookhaven.model;
 

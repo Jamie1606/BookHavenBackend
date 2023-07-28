@@ -2,8 +2,8 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 10.7.2023
-// Description	: this is to connect to s3 and upload image
+// Date			: 16.7.2023
+// Description	: to upload image and delete image
 
 package com.bookshop.bookhaven.model;
 

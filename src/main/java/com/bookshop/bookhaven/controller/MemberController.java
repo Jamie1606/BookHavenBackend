@@ -1,9 +1,9 @@
-//Author 	  : Thu Htet San
-//Admin No    : 2235022
-//Class       : DIT/FT/2A/02
-//Group       : 10
-//Date		  : 20.7.2023
-//Description : middleware for member
+// Author 	  	: Thu Htet San
+// Admin No    	: 2235022
+// Class       	: DIT/FT/2A/02
+// Group       	: 10
+// Date		  	: 20.7.2023
+// Description 	: middleware for member
 
 package com.bookshop.bookhaven.controller;
 
@@ -23,8 +23,8 @@ import com.bookshop.bookhaven.model.MemberDatabase;
 @RestController
 public class MemberController {
 
-	@RequestMapping(method = RequestMethod.GET, path = "/getMember/{uid}")
-	public ResponseEntity<?> getMember(@PathVariable("uid") int memberID) {
+	@RequestMapping(method = RequestMethod.GET, path = "/getMember/{id}")
+	public ResponseEntity<?> getMember(@PathVariable("id") int memberID) {
 		Member member = new Member();
 		try {
 			MemberDatabase member_db = new MemberDatabase();
@@ -89,8 +89,8 @@ public class MemberController {
 		return nrow;
 	}
 	
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{uid}", consumes = "application/json")
-	public int deleteMember( @PathVariable("uid") int memberID) {
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}", consumes = "application/json")
+	public int deleteMember( @PathVariable("id") int memberID) {
 		int nrow = 0;
 		try {
 			MemberDatabase member_db = new MemberDatabase();
