@@ -2,8 +2,8 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 11.7.2023
-// Description	: this is to store admin data from database
+// Date			: 26.7.2023
+// Description	: admin related database functions
 
 package com.bookshop.bookhaven.model;
 

@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 26.7.2023
+// Description	: to process jwt token before proceeding to endpoints
+
 package com.bookshop.bookhaven.configuration;
 
 import java.io.IOException;
@@ -37,12 +44,13 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		String header = request.getHeader("Authorization");
 		String statusRole = "";
+		String id = "";
 		
 		if(header != null && header.startsWith("Bearer ")) {
 			String token = header.substring(7);		// remove "Bearer " prefix
 			if(jwtToken.validateToken(token)) {
 				Claims claims = jwtToken.parseToken(token);
-				String id = claims.getSubject();
+				id = claims.getSubject();
 				String email = claims.get("email", String.class);
 				String role = claims.get("role", String.class);
 
@@ -67,6 +75,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 		}
 	
 		request.setAttribute("role", statusRole);
+		request.setAttribute("id", id);
 		filterChain.doFilter(request, response);		
 	}
 }

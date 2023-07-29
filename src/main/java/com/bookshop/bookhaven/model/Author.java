@@ -3,7 +3,7 @@
 // Class		: DIT/FT/2A/02
 // Group		: 10
 // Date			: 6.7.2023
-// Description	: to store author data from database
+// Description	: to store author data
 
 package com.bookshop.bookhaven.model;
 

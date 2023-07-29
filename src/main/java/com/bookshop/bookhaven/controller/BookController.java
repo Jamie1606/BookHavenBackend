@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 26.7.2023
+// Date			: 29.7.2023
 // Description	: middleware for book
 
 package com.bookshop.bookhaven.controller;
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,10 +32,80 @@ import jakarta.servlet.http.HttpServletRequest;
 public class BookController {
 	
 //	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
+	
+	
+	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
+	@Cacheable("bestseller")
+	public String getBestSeller(@PathVariable String limit) {
+		
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+
+		try {
+			BookDatabase book_db = new BookDatabase();
+			bookList = book_db.getBestSeller(Integer.parseInt(limit));
+			
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return json;
+	}
+	
+	
+	@RequestMapping(path = "/getTopRated/{limit}", method = RequestMethod.GET)
+	@Cacheable("toprated")
+	public String getTopRated(@PathVariable String limit) {
+		
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+
+		try {
+			BookDatabase book_db = new BookDatabase();
+			bookList = book_db.getTopRated(Integer.parseInt(limit));
+			
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return json;
+	}
+	
+	
+	@RequestMapping(path = "/getBookByAuthorID/{id}", method = RequestMethod.GET)
+	@Cacheable(value = "bookList", key = "'author-' + #id + '-books'")
+	public String getBookByAuthorID(@PathVariable("id") String id) {
+		
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+		
+		try {
+			BookDatabase book_db = new BookDatabase();
+			int[] authorID = new int[] {Integer.parseInt(id)};
+			bookList = book_db.getBookByAuthorID(authorID, "");
+			
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return json;
+	}
 
 	
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
-	@Cacheable(value = "bookList", key = "#isbn + #limit + '-related'")
+	@Cacheable(value = "bookList", key = "#isbn + '-related'")
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -57,7 +127,8 @@ public class BookController {
 			
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -67,7 +138,7 @@ public class BookController {
 	
 	
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
-	@Cacheable(value = "bookList", key = "#no + '-latest'")
+	@Cacheable(value = "bookList", key = "'latest'")
 	public String getLatest(@PathVariable String no) {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
@@ -181,7 +252,9 @@ public class BookController {
 
 	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
-	@CachePut({"bookList", "bookByISBN"})
+	@Caching( evict = {
+		@CacheEvict(value = "bookList", allEntries = true)
+	})
 	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -228,7 +301,13 @@ public class BookController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
-	@CachePut({"bookList", "bookByISBN"})
+	@Caching( evict = {
+		@CacheEvict(value = "bookList", allEntries = true),
+		@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
+		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"),
+		@CacheEvict(value = "toprated"),
+		@CacheEvict(value = "bestseller")
+	})
 	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
 		
 		int row = 0;
@@ -296,7 +375,13 @@ public class BookController {
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
-	@CacheEvict({"bookList", "bookByISBN"})
+	@Caching( evict = {
+		@CacheEvict(value = "bookList", allEntries = true),
+		@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
+		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"),
+		@CacheEvict(value = "toprated"),
+		@CacheEvict(value = "bestseller")
+	})
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();

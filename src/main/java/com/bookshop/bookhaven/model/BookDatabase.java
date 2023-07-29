@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 29.7.2023
+// Description	: book related database functions
+
 package com.bookshop.bookhaven.model;
 
 import java.sql.Connection;
@@ -10,6 +17,172 @@ import java.util.ArrayList;
 import org.apache.commons.text.StringEscapeUtils;
 
 public class BookDatabase {
+	
+	
+	public ArrayList<Book> getBestSeller(int limit) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Book ORDER BY SoldQty DESC LIMIT ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, limit);
+			
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				bookList.add(book);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getTopRated in BookDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return bookList;
+	}
+	
+	
+	public ArrayList<Book> getTopRated(int limit) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Book ORDER BY Rating DESC LIMIT ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, limit);
+			
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				bookList.add(book);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getTopRated in BookDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return bookList;
+	}
+	
+	
+	// reduce qty when order is made
+	public int reduceBookQty(ArrayList<OrderItem> items) throws SQLException {
+		Connection conn = null;
+		int rowsAffected = 0;
+
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			for(OrderItem item: items) {
+				String sqlStatement = "UPDATE Book SET Qty = Qty - ? WHERE ISBNNo = ?";
+				PreparedStatement st = conn.prepareStatement(sqlStatement);
+				
+				st.setInt(1, item.getQty());
+				st.setString(2, item.getIsbnno());
+				
+				rowsAffected += st.executeUpdate();
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in reduceBookQty in BookDatabase .....");
+		}
+		
+		return rowsAffected;
+	}
+	
+	
+	// get book by author id from database
+	public ArrayList<Book> getBookByAuthorID(int[] id, String isbn) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> books = new ArrayList<Book>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String authorIDstr = "";
+			
+			for(int i = 0; i < id.length; i++) {
+				if(i == id.length - 1) {
+					authorIDstr += "?";
+				}
+				else {
+					authorIDstr += "?, ";
+				}
+			}
+			
+			String sqlStatement = "SELECT * FROM Book b, BookAuthor ba WHERE b.ISBNNo = ba.ISBNNo AND ba.AuthorID IN (" + authorIDstr + ") AND b.ISBNNo != ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			for(int i = 0; i < id.length; i++) {
+				st.setInt(i + 1, id[i]);
+			}
+			st.setString(id.length + 1, isbn);
+			
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				books.add(book);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getBookByAuthorID in BookDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return books;
+	}
+	
 
 	// get book by isbn from database
 	public ArrayList<Book> getBookByGenreID(int[] id, String isbn) throws SQLException {
@@ -48,6 +221,7 @@ public class BookDatabase {
 				book.setPublicationDate(rs.getDate("PublicationDate"));
 				book.setQty(rs.getInt("Qty"));
 				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
 				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
 				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
 				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
@@ -60,9 +234,11 @@ public class BookDatabase {
 		} finally {
 			conn.close();
 		}
+		
 		return books;
 	}
 
+	
 	// get all book data from database
 	public ArrayList<Book> getLatest(int no) throws SQLException {
 		Connection conn = null;
@@ -88,6 +264,7 @@ public class BookDatabase {
 				book.setPrice(rs.getDouble("Price"));
 				book.setQty(rs.getInt("Qty"));
 				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
 				book.setPublisher(rs.getString("Publisher"));
 				book.setPublicationDate(rs.getDate("PublicationDate"));
 				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
@@ -102,9 +279,11 @@ public class BookDatabase {
 		} finally {
 			conn.close();
 		}
+		
 		return books;
 	}
 
+	
 	// get all book data from database
 	public ArrayList<Book> getBooks() throws SQLException {
 		Connection conn = null;
@@ -129,6 +308,7 @@ public class BookDatabase {
 				book.setPrice(rs.getDouble("Price"));
 				book.setQty(rs.getInt("Qty"));
 				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
 				book.setPublisher(rs.getString("Publisher"));
 				book.setPublicationDate(rs.getDate("PublicationDate"));
 				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
@@ -143,9 +323,11 @@ public class BookDatabase {
 		} finally {
 			conn.close();
 		}
+		
 		return books;
 	}
 
+	
 	// get book by isbn from database
 	public Book getBookByISBN(String isbn) throws SQLException {
 		Connection conn = null;
@@ -170,6 +352,7 @@ public class BookDatabase {
 				book.setPublicationDate(rs.getDate("PublicationDate"));
 				book.setQty(rs.getInt("Qty"));
 				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
 				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
 				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
 				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
@@ -184,6 +367,7 @@ public class BookDatabase {
 		return book;
 	}
 
+	
 	// insert book into database
 	public int createBook(Book book) throws SQLException {
 		Connection conn = null;
@@ -193,7 +377,7 @@ public class BookDatabase {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 
-			String sqlStatement = "INSERT INTO Book VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String sqlStatement = "INSERT INTO Book VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setString(1, book.getISBNNo());
 			st.setString(2, book.getTitle());
@@ -203,10 +387,11 @@ public class BookDatabase {
 			st.setDate(6, Date.valueOf(book.getPublicationDate().toString()));
 			st.setInt(7, book.getQty());
 			st.setDouble(8, book.getRating());
-			st.setString(9, book.getDescription());
-			st.setString(10, book.getImage());
-			st.setString(11, book.getImage3D());
-			st.setString(12, book.getStatus());
+			st.setInt(9, 0);
+			st.setString(10, book.getDescription());
+			st.setString(11, book.getImage());
+			st.setString(12, book.getImage3D());
+			st.setString(13, book.getStatus());
 
 			rowsAffected = st.executeUpdate();
 		} catch (Exception e) {
@@ -218,6 +403,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// insert book and author into database
 	public int createBookAuthor(String isbn, ArrayList<Author> author) throws SQLException {
 		Connection conn = null;
@@ -243,6 +429,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// get author details by ISBNNo from database
 	public ArrayList<Author> getAuthorByISBN(String isbn) throws SQLException {
 		ArrayList<Author> authorList = new ArrayList<Author>();
@@ -275,6 +462,7 @@ public class BookDatabase {
 		return authorList;
 	}
 
+	
 	// get genre details by ISBNNo from database
 	public ArrayList<Genre> getGenreByISBN(String isbn) throws SQLException {
 		ArrayList<Genre> genreList = new ArrayList<Genre>();
@@ -303,6 +491,7 @@ public class BookDatabase {
 		return genreList;
 	}
 
+	
 	// insert book and genre into database
 	public int createBookGenre(String isbn, ArrayList<Genre> genre) throws SQLException {
 		Connection conn = null;
@@ -328,6 +517,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// update book into database
 	public int updateBook(String isbn, Book book) throws SQLException {
 		Connection conn = null;
@@ -363,6 +553,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// delete book data from Book table
 	public int deleteBook(String isbn) throws SQLException {
 		Connection conn = null;
@@ -386,6 +577,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// get BookAuthor rows count
 	public int getBookAuthorCount(String isbn, int authorid) throws SQLException {
 		Connection conn = null;
@@ -415,6 +607,7 @@ public class BookDatabase {
 		return count;
 	}
 
+	
 	// get BookGenre rows count
 	public int getBookGenreCount(String isbn, int genreid) throws SQLException {
 		Connection conn = null;
@@ -444,6 +637,7 @@ public class BookDatabase {
 		return count;
 	}
 
+	
 	// delete book and author from database
 	public int deleteBookAuthor(String isbn, int authorid) throws SQLException {
 		Connection conn = null;
@@ -467,6 +661,7 @@ public class BookDatabase {
 		return rowsAffected;
 	}
 
+	
 	// delete book and genre from database
 	public int deleteBookGenre(String isbn, int genreid) throws SQLException {
 		Connection conn = null;

@@ -1,9 +1,9 @@
-//Author 	  : Thu Htet San
-//Admin No    : 2235022
-//Class       : DIT/FT/2A/02
-//Group       : 10
-//Date		  : 19.7.2023
-//Description : utility bean relating to "Genre" TABLE
+// Author 	  	: Thu Htet San
+// Admin No    	: 2235022
+// Class       	: DIT/FT/2A/02
+// Group       	: 10
+// Date		  	: 19.7.2023
+// Description 	: utility bean relating to "Genre" TABLE
 
 package com.bookshop.bookhaven.model;
 
