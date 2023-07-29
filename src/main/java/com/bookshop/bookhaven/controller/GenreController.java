@@ -1,9 +1,9 @@
-//Author 	  : Thu Htet San
-//Admin No    : 2235022
-//Class       : DIT/FT/2A/02
-//Group       : 10
-//Date		  : 20.7.2023
-//Description : middleware for genre
+// Author 	  : Thu Htet San
+// Admin No    : 2235022
+// Class       : DIT/FT/2A/02
+// Group       : 10
+// Date		  : 20.7.2023
+// Description : middleware for genre
 
 package com.bookshop.bookhaven.controller;
 
@@ -43,8 +43,8 @@ public class GenreController {
 		return json;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/getGenre/{uid}")
-	public ResponseEntity<?> getGenre(@PathVariable("uid") int genreID) {
+	@RequestMapping(method = RequestMethod.GET, path = "/getGenre/{id}")
+	public ResponseEntity<?> getGenre(@PathVariable("id") int genreID) {
 		Genre genre = new Genre();
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
@@ -92,8 +92,8 @@ public class GenreController {
 		return nrow;
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteGenre/{uid}", consumes = "application/json")
-	public int deleteGenre(@PathVariable("uid") int genreID) {
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteGenre/{id}", consumes = "application/json")
+	public int deleteGenre(@PathVariable("id") int genreID) {
 		int nrow = 0;
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
@@ -106,8 +106,8 @@ public class GenreController {
 		return nrow;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/getBookByGenreID/{uid}")
-	public ResponseEntity<?> getBookByGenreID(@PathVariable("uid") int genreID) {
+	@RequestMapping(method = RequestMethod.GET, path = "/getBookByGenreID/{id}")
+	public ResponseEntity<?> getBookByGenreID(@PathVariable("id") int genreID) {
 		ArrayList<Book> bookList = new ArrayList<Book>();
 
 		try {

@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 26.7.2023
+// Description	: to generate and validate jwt token
+
 package com.bookshop.bookhaven.configuration;
 
 import io.jsonwebtoken.Claims;

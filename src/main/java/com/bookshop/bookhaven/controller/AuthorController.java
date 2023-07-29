@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 26.7.2023
+// Date			: 27.7.2023
 // Description	: middleware for author
 
 package com.bookshop.bookhaven.controller;
@@ -10,7 +10,6 @@ package com.bookshop.bookhaven.controller;
 import java.util.ArrayList;
 
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +75,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.POST,
 			consumes = "application/json",
 			path = "/createAuthor")
-	@CachePut({"authorList", "authorById"})
+	@CacheEvict({"authorList", "authorById"})
 	public ResponseEntity<?> createAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		String role = (String) request.getAttribute("role");
@@ -102,7 +101,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.PUT,
 			consumes = "application/json",
 			path = "/updateAuthor")
-	@CachePut({"authorList", "authorById"})
+	@CacheEvict({"authorList", "authorById"})
 	public ResponseEntity<?> updateAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		int row = 0;
