@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 27.7.2023
+// Date			: 1.8.2023
 // Description	: middleware for login
 
 package com.bookshop.bookhaven.controller;
@@ -54,7 +54,6 @@ public class UserCredentialsController {
 					loginuserCredentials = new UserCredentials();
 					loginuserCredentials.setRole("ROLE_ADMIN");
 					loginuserCredentials.setToken(token);
-					json = obj.writeValueAsString(loginuserCredentials);
 					
 					if(admin_db.updateLoginTime(loginAdmin.getAdminID()) != 1) {
 						System.out.println("..... Error in loginAdmin in AdminController .....");
@@ -67,17 +66,18 @@ public class UserCredentialsController {
 				loginuserCredentials = new UserCredentials();
 				loginuserCredentials.setRole("ROLE_MEMBER");
 				loginuserCredentials.setToken(token);
-				json = obj.writeValueAsString(loginuserCredentials);
 				
 				if(member_db.updateLoginTime(loginMember.getMemberID()) != 1) {
 					System.out.println("..... Error in loginMember in MemberController .....");
 				}
 			}
+			json = obj.writeValueAsString(loginuserCredentials);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+		
 		return json;
 	}
 }
