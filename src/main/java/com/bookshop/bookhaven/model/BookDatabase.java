@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 29.7.2023
+// Date			: 1.8.2023
 // Description	: book related database functions
 
 package com.bookshop.bookhaven.model;
@@ -101,8 +101,9 @@ public class BookDatabase {
 	}
 	
 	
-	// reduce qty when order is made
-	public int reduceBookQty(ArrayList<OrderItem> items) throws SQLException {
+	// if you want to subtract, give positive value
+	// if you want to add, give negative value
+	public int changeBookQty(ArrayList<OrderItem> items) throws SQLException {
 		Connection conn = null;
 		int rowsAffected = 0;
 

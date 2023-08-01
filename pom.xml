@@ -53,7 +53,7 @@
     		<artifactId>commons-text</artifactId>
     		<version>1.10.0</version>
 		</dependency>
-		
+
 		<dependency>
     		<groupId>software.amazon.awssdk</groupId>
     		<artifactId>s3</artifactId>
@@ -103,9 +103,6 @@
 		    <artifactId>stripe-java</artifactId>
 		    <version>22.28.0</version>
 		</dependency>
-
-
-
 		
 		<!-- Spring Security -->
 		<dependency>

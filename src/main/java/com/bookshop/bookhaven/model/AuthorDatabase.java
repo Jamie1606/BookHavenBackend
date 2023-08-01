@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 22.7.2023
+// Date			: 1.8.2023
 // Description	: author related database functions
 
 package com.bookshop.bookhaven.model;
@@ -122,7 +122,7 @@ public class AuthorDatabase {
 	}
 
 	// update author by author id in database 
-	public int updateAuthor(Author author) throws SQLException {
+	public int updateAuthor(int id, Author author) throws SQLException {
 		Connection conn = null;
 		int rowsAffected = 0;
 		
@@ -132,7 +132,7 @@ public class AuthorDatabase {
 			
 			String sqlStatement = "SELECT * FROM Author WHERE AuthorID = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setInt(1, author.getAuthorID());
+			st.setInt(1, id);
 			ResultSet rs = st.executeQuery();
 			
 			if(rs.next()) {
@@ -150,7 +150,7 @@ public class AuthorDatabase {
 				
 				st.setString(4, author.getBiography());
 				st.setString(5, author.getLink());
-				st.setInt(6, author.getAuthorID());
+				st.setInt(6, id);
 	
 				rowsAffected = st.executeUpdate();
 			}

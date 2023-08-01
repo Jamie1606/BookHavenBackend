@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 29.7.2023
+// Date			: 1.8.2023
 // Description	: middleware for book
 
 package com.bookshop.bookhaven.controller;
@@ -304,9 +304,7 @@ public class BookController {
 	@Caching( evict = {
 		@CacheEvict(value = "bookList", allEntries = true),
 		@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
-		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"),
-		@CacheEvict(value = "toprated"),
-		@CacheEvict(value = "bestseller")
+		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'")
 	})
 	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
 		
