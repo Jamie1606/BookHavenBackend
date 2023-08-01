@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 29.7.2023
+// Date			: 1.8.2023
 // Description	: to store order item
 
 package com.bookshop.bookhaven.model;
@@ -14,7 +14,15 @@ public class OrderItem {
 	private int qty;
 	private double amount;
 	private String status;
-	
+	private Book book;
+
+	public Book getBook() {
+		return book;
+	}
+
+	public void setBook(Book book) {
+		this.book = book;
+	}
 	
 	public int getOrderid() {
 		return orderid;

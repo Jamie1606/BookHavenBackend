@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 29.7.2023
+// Date			: 1.8.2023
 // Description	: to store book data
 
 package com.bookshop.bookhaven.model;
@@ -112,7 +112,7 @@ public class Book {
 	}
 	
 	public void setImage(String image) {
-		this.image = image;
+		this.image = "http://s3.us-east-1.amazonaws.com/bookhavenjad10/" + image;
 	}
 	
 	public String getImage3D() {
@@ -120,7 +120,7 @@ public class Book {
 	}
 	
 	public void setImage3D(String image3d) {
-		image3D = image3d;
+		image3D = "http://s3.us-east-1.amazonaws.com/bookhavenjad10/" + image3d;
 	}
 	
 	public String getStatus() {

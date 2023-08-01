@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 27.7.2023
+// Date			: 1.8.2023
 // Description	: middleware for author
 
 package com.bookshop.bookhaven.controller;
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,7 +52,7 @@ public class AuthorController {
 	
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
-	@Cacheable("authorById")
+	@Cacheable(value = "authorById", key = "#id + '-author'")
 	public String getAuthor(@PathVariable("id") String authorid) {
 		
 		Author author = new Author();
@@ -75,7 +76,7 @@ public class AuthorController {
 	@RequestMapping(method = RequestMethod.POST,
 			consumes = "application/json",
 			path = "/createAuthor")
-	@CacheEvict({"authorList", "authorById"})
+	@CacheEvict(value = "authorList", allEntries = true)
 	public ResponseEntity<?> createAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		String role = (String) request.getAttribute("role");
@@ -100,16 +101,20 @@ public class AuthorController {
 	
 	@RequestMapping(method = RequestMethod.PUT,
 			consumes = "application/json",
-			path = "/updateAuthor")
+			path = "/updateAuthor/{id}")
+	@Caching(evict = {
+		@CacheEvict(value = "authorList", allEntries = true),
+		@CacheEvict(value = "authorById", key = "#id + '-author'")
+	})
 	@CacheEvict({"authorList", "authorById"})
-	public ResponseEntity<?> updateAuthor(@RequestBody Author author, HttpServletRequest request) {
+	public ResponseEntity<?> updateAuthor(@PathVariable("id") String id, @RequestBody Author author, HttpServletRequest request) {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		if(role != null && role.equals("ROLE_ADMIN")) {
 			try {
 				AuthorDatabase author_db = new AuthorDatabase();
-				row = author_db.updateAuthor(author);
+				row = author_db.updateAuthor(Integer.parseInt(id), author);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -125,7 +130,10 @@ public class AuthorController {
 	
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteAuthor/{id}")
-	@CacheEvict({"authorList", "authorById"})
+	@Caching( evict = {
+		@CacheEvict(value = "authorList", allEntries = true),
+		@CacheEvict(value = "authorById", key = "#id + '-author'")
+	})
 	public ResponseEntity<?> deleteAuthor(@PathVariable("id") String authorid, HttpServletRequest request) {
 		
 		int row = 0;

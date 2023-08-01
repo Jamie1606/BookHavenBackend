@@ -2,7 +2,7 @@
 // Admin No		: 2235035
 // Class		: DIT/FT/2A/02
 // Group		: 10
-// Date			: 26.7.2023
+// Date			: 1.8.2023
 // Description	: to only allow certain endpoints and process jwt token before endpoints
 
 package com.bookshop.bookhaven.configuration;
@@ -25,69 +25,63 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-	
+
 	@Autowired
 	private JWTTokenUtil jwtToken;
-	
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http
-			.csrf((csrf) -> csrf
-					.disable())
-			.cors((cors) -> cors
-					.configurationSource(configurationSource()))
-			.authorizeHttpRequests(
-				(requests) -> requests
-					.requestMatchers("/userlogin").permitAll()
-					.requestMatchers("/getLatest/{no}").permitAll()
-					.requestMatchers("/getRelated/{isbn}/{limit}").permitAll()
-					.requestMatchers("/getAllBook/details").permitAll()
-					.requestMatchers("/getBook/{isbn}").permitAll()
-					.requestMatchers("/getBook/details/{isbn}").permitAll()
-					.requestMatchers("/createBook").permitAll()
-					.requestMatchers("/updateBook/{isbn}").permitAll()
-					.requestMatchers("/deleteBook/{isbn}").permitAll()
-					.requestMatchers("/checkISBN13/{isbn}").permitAll()
-					.requestMatchers("/getAllBook").permitAll()
-					.requestMatchers("/getBestSeller/{limit}").permitAll()
-					.requestMatchers("/getTopRated/{limit}").permitAll()
-					.requestMatchers("/getBookByAuthorID/{id}").permitAll()
-					.requestMatchers("/getAdmin/{id}").permitAll()
-					.requestMatchers("/getAllAuthor").permitAll()
-					.requestMatchers("/getAuthor/{id}").permitAll()
-					.requestMatchers("/createAuthor").permitAll()
-					.requestMatchers("/updateAuthor").permitAll()
-					.requestMatchers("/deleteAuthor/{id}").permitAll()
-					.requestMatchers("/getAllGenre").permitAll()
-					.requestMatchers("/getGenre/{id}").permitAll()
-					.requestMatchers("/createGenre").permitAll()
-					.requestMatchers("/updateGenre").permitAll()
-					.requestMatchers("/deleteGenre/{id}").permitAll()
-					.requestMatchers("/getBookByGenreID/{id}").permitAll()
-					.requestMatchers("/uploadImage/book/normal").permitAll()
-					.requestMatchers("/deleteImage/{image}").permitAll()
-					.requestMatchers("/uploadImage/book/3d").permitAll()
-					.requestMatchers("/uploadImage/member").permitAll()
-					.requestMatchers("/uploadImage/book/3d").permitAll()
-					.requestMatchers("/getMember/{id}").permitAll()
-					.requestMatchers("/getAllMember").permitAll()
-					.requestMatchers("/createMember").permitAll()
-					.requestMatchers("/updateMember").permitAll()
-					.requestMatchers("/deleteMember/{id}").permitAll()
-					.requestMatchers("/getBook/title/{bookTitle}").permitAll()
-					.requestMatchers("/getBook/author/{name}").permitAll()
-					.requestMatchers("/makeOrder").permitAll()
-					.anyRequest().authenticated())
-			.sessionManagement(
-					(session) -> session
-						.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		
+		http.csrf((csrf) -> csrf.disable()).cors((cors) -> cors.configurationSource(configurationSource()))
+				.authorizeHttpRequests((requests) -> requests.requestMatchers("/userlogin").permitAll()
+						.requestMatchers("/getLatest/{no}").permitAll()
+						.requestMatchers("/getRelated/{isbn}/{limit}").permitAll()
+						.requestMatchers("/getAllBook/details").permitAll()
+						.requestMatchers("/getBook/{isbn}").permitAll()
+						.requestMatchers("/getBook/details/{isbn}")
+						.permitAll().requestMatchers("/createBook").permitAll()
+						.requestMatchers("/updateBook/{isbn}").permitAll()
+						.requestMatchers("/deleteBook/{isbn}").permitAll()
+						.requestMatchers("/checkISBN13/{isbn}").permitAll()
+						.requestMatchers("/getAllBook").permitAll()
+						.requestMatchers("/getBestSeller/{limit}").permitAll()
+						.requestMatchers("/getTopRated/{limit}").permitAll()
+						.requestMatchers("/getBookByAuthorID/{id}").permitAll()
+						.requestMatchers("/getAdmin/{id}").permitAll()
+						.requestMatchers("/getAllAuthor").permitAll()
+						.requestMatchers("/getAuthor/{id}").permitAll()
+						.requestMatchers("/createAuthor").permitAll()
+						.requestMatchers("/updateAuthor/{id}").permitAll()
+						.requestMatchers("/deleteAuthor/{id}").permitAll()
+						.requestMatchers("/getAllGenre").permitAll()
+						.requestMatchers("/getGenre/{id}").permitAll()
+						.requestMatchers("/createGenre").permitAll()
+						.requestMatchers("/updateGenre").permitAll()
+						.requestMatchers("/deleteGenre/{id}").permitAll()
+						.requestMatchers("/getBookByGenreID/{id}").permitAll()
+						.requestMatchers("/uploadImage/book/normal").permitAll()
+						.requestMatchers("/deleteImage/{image}").permitAll()
+						.requestMatchers("/uploadImage/book/3d").permitAll()
+						.requestMatchers("/uploadImage/member").permitAll()
+						.requestMatchers("/uploadImage/book/3d").permitAll()
+						.requestMatchers("/getMember/{id}").permitAll()
+						.requestMatchers("/getAllMember").permitAll()
+						.requestMatchers("/createMember").permitAll()
+						.requestMatchers("/updateMember").permitAll()
+						.requestMatchers("/deleteMember/{id}").permitAll()
+						.requestMatchers("/getBook/title/{bookTitle}").permitAll()
+						.requestMatchers("/getBook/author/{name}").permitAll()
+						.requestMatchers("/makeOrder").permitAll()
+						.requestMatchers("/getMemberOrders/{date}/{status}").permitAll()
+						.requestMatchers("/cancelMemberOrderItem").permitAll()
+						.anyRequest().authenticated())
+				.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 		http.addFilterBefore(new JWTAuthenticationFilter(jwtToken), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
-	
-	
-	// this is taken from https://stackoverflow.com/questions/45391264/spring-boot-2-and-oauth2-jwt-configuration
+
+	// this is taken from
+	// https://stackoverflow.com/questions/45391264/spring-boot-2-and-oauth2-jwt-configuration
 	@Bean
 	public CorsConfigurationSource configurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
