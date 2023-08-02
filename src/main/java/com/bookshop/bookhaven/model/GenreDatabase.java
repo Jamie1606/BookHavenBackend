@@ -36,6 +36,7 @@ public class GenreDatabase {
 			}
 		} catch (Exception e) {
 			System.out.println(".......genreDB : " + e);
+			return null;
 		} finally {
 			conn.close();
 		}
