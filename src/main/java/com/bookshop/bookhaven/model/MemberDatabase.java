@@ -183,6 +183,7 @@ public class MemberDatabase {
 			}
 		} catch (Exception e) {
 			System.out.println(".......memberDB : " + e);
+			memberList = null;
 		} finally {
 			conn.close();
 		}
