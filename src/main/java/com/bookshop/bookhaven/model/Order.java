@@ -22,6 +22,15 @@ public class Order {
 	private int memberid;
 	private String token;
 	private ArrayList<OrderItem> orderitems;
+	private Member member;
+
+	public Member getMember() {
+		return member;
+	}
+
+	public void setMember(Member member) {
+		this.member = member;
+	}
 
 	public String getToken() {
 		return token;

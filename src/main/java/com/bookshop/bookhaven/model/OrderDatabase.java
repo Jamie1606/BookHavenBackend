@@ -20,6 +20,106 @@ import org.apache.commons.text.StringEscapeUtils;
 public class OrderDatabase {
 	
 	
+	// complete order
+	public int completeOrder(int orderid) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "UPDATE `Order` SET OrderStatus = 'delivered' WHERE OrderID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, orderid);
+			
+			rowsAffected = st.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in completeOrder in OrderDatabase .....");
+			return 0;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return rowsAffected;
+	}
+	
+	
+	// complete order item (status = delivered)
+	public int completeOrderItem(OrderItem item) throws SQLException {
+
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "UPDATE OrderItem SET Status = 'delivered' WHERE OrderID = ? AND ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, item.getOrderid());
+			st.setString(2, item.getIsbnno());
+			
+			rowsAffected = st.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in completeOrderItem in OrderDatabase .....");
+			return 0;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return rowsAffected;
+	}
+	
+	
+	
+	// get all orders with member data
+	public ArrayList<Order> getAllOrders() throws SQLException {
+		
+		Connection conn = null;
+		ArrayList<Order> orders = new ArrayList<Order>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "SELECT * FROM `Order` o, Member m WHERE o.MemberID = m.MemberID ORDER BY o.OrderDate DESC";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Order order = new Order();
+				order.setOrderid(rs.getInt("OrderID"));
+				order.setOrderdate(rs.getDate("OrderDate"));
+				order.setAmount(rs.getDouble("Amount"));
+				order.setGst(rs.getInt("GST"));
+				order.setTotalamount(rs.getDouble("TotalAmount"));
+				order.setOrderstatus(StringEscapeUtils.escapeHtml4(rs.getString("OrderStatus")));
+				order.setDeliveryaddress(StringEscapeUtils.escapeHtml4(rs.getString("DeliveryAddress")));
+				order.setMemberid(rs.getInt("MemberID"));
+				
+				Member member = new Member();
+				member.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
+				member.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
+				member.setMemberID(rs.getInt("MemberID"));
+				member.setEmail(StringEscapeUtils.escapeHtml4(rs.getString("Email")));
+				order.setMember(member);
+				orders.add(order);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getAllOrders in OrderDatabase .....");
+		}
+		
+		return orders;
+	}
+	
+	
 	// cancel order
 	public int cancelOrder(int orderid) throws SQLException {
 		
@@ -48,9 +148,37 @@ public class OrderDatabase {
 	}
 	
 	
+	// check whether order id is valid or not by admin
+	public int checkOrderIDByAdmin(int orderid) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM `Order` WHERE OrderID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			
+			st.setInt(1, orderid);
+			ResultSet rs = st.executeQuery();
+			
+			while(rs.next()) {
+				rowsAffected += 1;
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in checkOrderIDByAdmin in OrderDatabase .....");
+			return 0;
+		}
+		
+		return rowsAffected;
+	}
+	
 	
 	// check whether order id is member order id
 	public int checkOrderID(int orderid, int memberid) throws SQLException {
+		
 		Connection conn = null;
 		int rowsAffected = 0;
 		
@@ -78,7 +206,7 @@ public class OrderDatabase {
 	
 	
 	// cancel order item
-	public int cancelOrderItem(int orderid, String isbn) throws SQLException {
+	public int cancelOrderItem(OrderItem item) throws SQLException {
 		
 		Connection conn = null;
 		int rowsAffected = 0;
@@ -88,8 +216,8 @@ public class OrderDatabase {
 			
 			String sqlStatement = "UPDATE OrderItem SET Status = 'cancelled' WHERE OrderID = ? AND ISBNNo = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setInt(1, orderid);
-			st.setString(2, isbn);
+			st.setInt(1, item.getOrderid());
+			st.setString(2, item.getIsbnno());
 			
 			rowsAffected = st.executeUpdate();
 		}
