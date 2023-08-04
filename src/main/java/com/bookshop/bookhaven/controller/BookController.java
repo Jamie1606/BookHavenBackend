@@ -164,6 +164,7 @@ public class BookController {
 		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
+		
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getBooks();
@@ -259,7 +260,9 @@ public class BookController {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		String id = (String) request.getAttribute("id");
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -310,7 +313,9 @@ public class BookController {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		String id = (String) request.getAttribute("id");
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				BookDatabase book_db = new BookDatabase();
 				if (book_db.getBookByISBN(isbn) != null) {
@@ -393,8 +398,9 @@ public class BookController {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
 		
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			// image delete left
 			
 			try {
@@ -421,8 +427,10 @@ public class BookController {
 	// https://isbn-information.com/check-digit-for-the-13-digit-isbn.html
 	@RequestMapping(method = RequestMethod.GET, path = "/checkISBN13/{isbn}")
 	public boolean checkISBN13(@PathVariable String isbn) {
+		
 		boolean condition = false;
 		ArrayList<Integer> isbnInt = new ArrayList<Integer>();
+		
 		try {
 			char[] testChars = isbn.toCharArray();
 			for (char c : testChars) {
@@ -451,6 +459,7 @@ public class BookController {
 			e.printStackTrace();
 			return false;
 		}
+		
 		return condition;
 	}
 }

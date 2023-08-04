@@ -30,12 +30,188 @@ import com.bookshop.bookhaven.model.OrderItem;
 import com.bookshop.bookhaven.model.StripePayment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Charge;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class OrderController {
+	
+	
+	@RequestMapping(method = RequestMethod.PUT, path = "/cancelOrderItem", consumes = "application/json")
+	@CacheEvict(value = "memberOrders", allEntries = true)
+	public ResponseEntity<?> cancelOrderItem(@RequestBody OrderItem item, HttpServletRequest request) {
+		
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		int row = 0;
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			
+			try {
+				OrderDatabase order_db = new OrderDatabase();
+				if(order_db.checkOrderIDByAdmin(item.getOrderid()) == 1) {
+
+					row = order_db.cancelOrderItem(item);
+					if(row == 1) {
+						ArrayList<OrderItem> items = order_db.getOrderItemsByOrderID(item.getOrderid());
+						boolean condition = true;
+						for(int i = 0; i < items.size(); i++) {
+							if(items.get(i).getIsbnno().equals(item.getIsbnno())) {
+								BookDatabase book_db = new BookDatabase();
+								items.get(i).setQty(0 - items.get(i).getQty());
+								ArrayList<OrderItem> temp_item = new ArrayList<OrderItem>();
+								temp_item.add(items.get(i));
+								row = book_db.changeBookQty(temp_item);
+								if(row != 1) {
+									row = 0;
+									break;
+								}
+							}
+							if(!items.get(i).getStatus().equals("cancelled")) {
+								condition = false;
+							}
+						}
+						
+						if(condition) {
+							row = order_db.cancelOrder(item.getOrderid());
+							if(row != 1) {
+								row = 0;
+							}
+						}
+					}
+					else {
+						row = 0;
+					}
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(row);
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.PUT, path = "/completeOrderItem", consumes = "application/json")
+	@CacheEvict(value = "memberOrders", allEntries = true)
+	public ResponseEntity<?> completeOrderItem(@RequestBody OrderItem item, HttpServletRequest request) {
+		
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		int row = 0;
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			
+			try {
+				
+				OrderDatabase order_db = new OrderDatabase();
+				if(order_db.checkOrderIDByAdmin(item.getOrderid()) == 1) {
+					
+					row = order_db.completeOrderItem(item);
+					if(row == 1) {
+						ArrayList<OrderItem> items = order_db.getOrderItemsByOrderID(item.getOrderid());
+						boolean condition = true;
+						for(int i = 0; i < items.size(); i++) {
+							if(items.get(i).getIsbnno().equals(item.getIsbnno())) {
+								BookDatabase book_db = new BookDatabase();
+								row = book_db.increaseSoldQty(items.get(i).getQty(), items.get(i).getIsbnno());
+								if(row != 1) {
+									row = 0;
+									break;
+								}
+							}
+							if(!items.get(i).getStatus().equals("delivered")) {
+								condition = false;
+							}
+						}
+						if(condition) {
+							
+							row = order_db.completeOrder(item.getOrderid());
+							if(row != 1) {
+								row = 0;
+							}
+						}
+					}
+					else {
+						row = 0;
+					}
+				}
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(row);
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.GET, path = "/getOrderItem/{id}")
+	public ResponseEntity<?> getOrderItem(@PathVariable("id") String orderid, HttpServletRequest request) {
+		
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		ArrayList<OrderItem> orderItemList = new ArrayList<OrderItem>();
+		String json = "";
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			
+			try {
+				OrderDatabase order_db = new OrderDatabase();
+				orderItemList = order_db.getOrderItemsByOrderID(Integer.parseInt(orderid));
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(orderItemList);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(null);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(json);
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.GET, path = "/getAllOrders")
+	public ResponseEntity<?> getAllOrders(HttpServletRequest request) {
+		
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		ArrayList<Order> orderList = new ArrayList<Order>();
+		String json = "";
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			
+			try {
+				OrderDatabase order_db = new OrderDatabase();
+				orderList = order_db.getAllOrders();
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(orderList);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(null);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(json);
+	}
+	
 	
 	@RequestMapping(method = RequestMethod.PUT, path = "/cancelMemberOrderItem", consumes = "application/json")
 	@CacheEvict(value = "memberOrders", allEntries = true)
@@ -51,7 +227,7 @@ public class OrderController {
 				OrderDatabase order_db = new OrderDatabase();
 				if(order_db.checkOrderID(item.getOrderid(), Integer.parseInt(id)) == 1) {
 
-					row = order_db.cancelOrderItem(item.getOrderid(), item.getIsbnno());
+					row = order_db.cancelOrderItem(item);
 					if(row == 1) {
 						ArrayList<OrderItem> items = order_db.getOrderItemsByOrderID(item.getOrderid());
 						boolean condition = true;
@@ -150,7 +326,7 @@ public class OrderController {
 				try {
 					StripePayment payment = new StripePayment();
 					int amountInCents = (int) (order.getTotalamount() * 100);
-					Charge charge = payment.processPayment(order.getToken(), amountInCents, "SGD");
+					payment.processPayment(order.getToken(), amountInCents, "SGD");
 				}
 				catch(StripeException e) {
 					System.out.println(e.getMessage());

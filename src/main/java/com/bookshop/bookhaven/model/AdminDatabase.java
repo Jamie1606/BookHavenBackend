@@ -34,7 +34,7 @@ public class AdminDatabase {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("..... Error in loadUserByUsername in AdminDatabase .....");
+			System.out.println("..... Error in checkUserByEmail in AdminDatabase .....");
 		} finally {
 			conn.close();
 		}
