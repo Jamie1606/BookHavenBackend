@@ -20,14 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookshop.bookhaven.model.Genre;
 import com.bookshop.bookhaven.model.GenreDatabase;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.bookshop.bookhaven.model.Book;
 
 @RestController
 public class GenreController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getAllGenre")
-	public String getAllGenre() {
-		
+	public ResponseEntity<?> getAllGenre() {
+
 		String json = null;
 		ArrayList<Genre> genreList = new ArrayList<Genre>();
 
@@ -38,88 +41,119 @@ public class GenreController {
 			json = obj.writeValueAsString(genreList);
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(null);
 		}
-		
-		return json;
+
+		return ResponseEntity.ok().body(json);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getGenre/{id}")
 	public ResponseEntity<?> getGenre(@PathVariable("id") int genreID) {
+		String json = null;
 		Genre genre = new Genre();
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
 			genre = genre_db.getGenreByID(genreID);
+			if (genre == null) {
+				return ResponseEntity.badRequest().body("Member does not exist!");
+			}
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(genre);
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(null);
 		}
-		if (genre == null) {
-			return new ResponseEntity<>("Genre does not exist!", HttpStatus.BAD_REQUEST);
-		} else {
-			return new ResponseEntity<>(genre, HttpStatus.OK);
-		}
-
+		return ResponseEntity.ok().body(json);
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/createGenre", consumes = "application/json")
-	public int createGenre(@RequestBody Genre genre) {
+	public ResponseEntity<?> createGenre(@RequestBody Genre genre, HttpServletRequest request) {
 
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
 		int nrow = 0;
-		try {
-			GenreDatabase genre_db = new GenreDatabase();
-			System.out.println(".....inside genre controller.....");
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				GenreDatabase genre_db = new GenreDatabase();
+				System.out.println(".....inside genre controller.....");
 
-			nrow = genre_db.insertGenre(genre);
-			System.out.println(".....done create genre.....");
+				nrow = genre_db.insertGenre(genre);
+				System.out.println(".....done create genre.....");
 
-		} catch (Exception e) {
-			System.out.println("Error :" + e);
+			} catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(0);
+			}
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		return nrow;
+		return ResponseEntity.ok().body(nrow);
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, path = "/updateGenre", consumes = "application/json")
-	public int updateGenre(@RequestBody Genre genre) {
-
+	public ResponseEntity<?> updateGenre(@RequestBody Genre genre, HttpServletRequest request) {
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
 		int nrow = 0;
-		try {
-			GenreDatabase genre_db = new GenreDatabase();
-			System.out.println(".....inside genre controller.....");
-			nrow = genre_db.updateGenre(genre);
-			System.out.println(".....done update genre.....");
-		} catch (Exception e) {
-			System.out.println("Error :" + e);
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				GenreDatabase genre_db = new GenreDatabase();
+				System.out.println(".....inside genre controller.....");
+				nrow = genre_db.updateGenre(genre);
+				System.out.println(".....done update genre.....");
+			} catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(0);
+			}
+		} else {
+
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		return nrow;
+		return ResponseEntity.ok().body(nrow);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteGenre/{id}", consumes = "application/json")
-	public int deleteGenre(@PathVariable("id") int genreID) {
+	public ResponseEntity<?> deleteGenre(@PathVariable("id") int genreID, HttpServletRequest request) {
+
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
 		int nrow = 0;
-		try {
-			GenreDatabase genre_db = new GenreDatabase();
-			System.out.println(".....inside genre controller.....");
-			nrow = genre_db.deleteGenre(genreID);
-			System.out.println(".....done delete genre.....");
-		} catch (Exception e) {
-			System.out.println("Error :" + e);
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				GenreDatabase genre_db = new GenreDatabase();
+				System.out.println(".....inside genre controller.....");
+				nrow = genre_db.deleteGenre(genreID);
+				System.out.println(".....done delete genre.....");
+			} catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(0);
+			}
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		return nrow;
+		return ResponseEntity.ok().body(nrow);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBookByGenreID/{id}")
 	public ResponseEntity<?> getBookByGenreID(@PathVariable("id") int genreID) {
 		ArrayList<Book> bookList = new ArrayList<Book>();
-
+		String json = null;
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
 			if (genre_db.getGenreByID(genreID) != null) {
 				bookList = genre_db.getBookByGenreID(genreID);
+				if (bookList == null) {
+					return ResponseEntity.badRequest().body("Book does not exist!");
+				}
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(bookList);
 			} else {
-				return new ResponseEntity<>("Genre does not exist!", HttpStatus.BAD_REQUEST);
+				return ResponseEntity.badRequest().body("Genre does not exist!");
 			}
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(null);
 		}
-		return new ResponseEntity<>(bookList, HttpStatus.OK);
+		return ResponseEntity.ok().body(json);
 	}
 }
