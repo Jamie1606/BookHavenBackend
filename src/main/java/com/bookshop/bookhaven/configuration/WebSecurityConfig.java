@@ -1,5 +1,5 @@
 // Author		: Zay Yar Tun
-// Admin No		: 2235035
+// Admin No		: 2235035, 2235022
 // Class		: DIT/FT/2A/02
 // Group		: 10
 // Date			: 1.8.2023
@@ -73,6 +73,10 @@ public class WebSecurityConfig {
 						.requestMatchers("/makeOrder").permitAll()
 						.requestMatchers("/getMemberOrders/{date}/{status}").permitAll()
 						.requestMatchers("/cancelMemberOrderItem").permitAll()
+						.requestMatchers("/getAllOrders").permitAll()
+						.requestMatchers("/getOrderItem/{id}").permitAll()
+						.requestMatchers("/completeOrderItem").permitAll()
+						.requestMatchers("/cancelOrderItem").permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

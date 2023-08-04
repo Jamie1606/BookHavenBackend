@@ -158,19 +158,29 @@ public class MemberDatabase {
 
 	// select all member data
 	public ArrayList<Member> getAllMember() throws SQLException {
+		
 		ArrayList<Member> memberList = new ArrayList<>();
 		Connection conn = null;
 		Member uBean = null;
+		
 		try {
 			conn = DatabaseConnection.getConnection();
 			String sqlStatement = "SELECT * FROM Member";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			ResultSet rs = pstmt.executeQuery();
+			
 			while (rs.next()) {
 				uBean = new Member();
 				uBean.setMemberID(rs.getInt("MemberID"));
 				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
-				uBean.setGender(rs.getString("Gender").charAt(0));
+				
+				if(rs.getString("Gender") == null) {
+					uBean.setGender('N');
+				}
+				else {
+					uBean.setGender(rs.getString("Gender").charAt(0));
+				}
+				
 				uBean.setBirthDate(rs.getDate("BirthDate"));
 				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
 				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
@@ -186,8 +196,8 @@ public class MemberDatabase {
 		} finally {
 			conn.close();
 		}
+		
 		return memberList;
-
 	}
 
 	// select member data by ID
@@ -205,7 +215,14 @@ public class MemberDatabase {
 				uBean = new Member();
 				uBean.setMemberID(rs.getInt("MemberID"));
 				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
-				uBean.setGender(rs.getString("Gender").charAt(0));
+				
+				if(rs.getString("Gender") == null) {
+					uBean.setGender('N');
+				}
+				else {
+					uBean.setGender(rs.getString("Gender").charAt(0));
+				}
+				
 				uBean.setBirthDate(rs.getDate("BirthDate"));
 				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
 				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
@@ -227,8 +244,10 @@ public class MemberDatabase {
 
 	// update member data to db
 	public int updateMember(Member member) throws SQLException {
+		
 		Connection conn = null;
 		int rec = 0;
+		
 		try {
 			conn = DatabaseConnection.getConnection();
 			String name = member.getName();
@@ -240,7 +259,7 @@ public class MemberDatabase {
 			int memberID = member.getMemberID();
 			String password = member.getPassword();
 			
-			if (password == null || password == "") {
+			if (password == null || password.isEmpty()) {
 				
 				// Without Password
 				String sqlStatement = "UPDATE Member SET Name = ?, Gender = ?, BirthDate = ?, Phone = ?, Address = ?, Image = ? WHERE MemberID = ?;";
@@ -290,13 +309,15 @@ public class MemberDatabase {
 				rec = pstmt.executeUpdate();
 				System.out.println("...in MemberDB-done update member data...");
 				// end-with password
-				
 			}
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			System.out.println(".......memberDB : " + e);
-		} finally {
+		} 
+		finally {
 			conn.close();
 		}
+		
 		return rec;
 	}
 

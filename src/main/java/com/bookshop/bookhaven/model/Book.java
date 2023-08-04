@@ -112,7 +112,7 @@ public class Book {
 	}
 	
 	public void setImage(String image) {
-		this.image = "http://s3.us-east-1.amazonaws.com/bookhavenjad10/" + image;
+		this.image = image;
 	}
 	
 	public String getImage3D() {
@@ -120,7 +120,7 @@ public class Book {
 	}
 	
 	public void setImage3D(String image3d) {
-		image3D = "http://s3.us-east-1.amazonaws.com/bookhavenjad10/" + image3d;
+		image3D = image3d;
 	}
 	
 	public String getStatus() {

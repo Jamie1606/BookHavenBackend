@@ -80,8 +80,10 @@ public class AuthorController {
 	public ResponseEntity<?> createAuthor(@RequestBody Author author, HttpServletRequest request) {
 		
 		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
 		int row = 0;
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				AuthorDatabase author_db = new AuthorDatabase();
 				row = author_db.createAuthor(author);
@@ -107,14 +109,16 @@ public class AuthorController {
 		@CacheEvict(value = "authorById", key = "#id + '-author'")
 	})
 	@CacheEvict({"authorList", "authorById"})
-	public ResponseEntity<?> updateAuthor(@PathVariable("id") String id, @RequestBody Author author, HttpServletRequest request) {
+	public ResponseEntity<?> updateAuthor(@PathVariable("id") String authorid, @RequestBody Author author, HttpServletRequest request) {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		String id = (String) request.getAttribute("id");
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				AuthorDatabase author_db = new AuthorDatabase();
-				row = author_db.updateAuthor(Integer.parseInt(id), author);
+				row = author_db.updateAuthor(Integer.parseInt(authorid), author);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -138,7 +142,9 @@ public class AuthorController {
 		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
-		if(role != null && role.equals("ROLE_ADMIN")) {
+		String id = (String) request.getAttribute("id");
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				AuthorDatabase author_db = new AuthorDatabase();
 				row = author_db.deleteAuthor(Integer.parseInt(authorid));

@@ -19,6 +19,31 @@ import org.apache.commons.text.StringEscapeUtils;
 public class BookDatabase {
 	
 	
+	public int increaseSoldQty(int qty, String isbnno) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "UPDATE Book SET SoldQty = SoldQty + ? WHERE ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, qty);
+			st.setString(2, isbnno);
+			
+			rowsAffected = st.executeUpdate();
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in increaseSoldQty in BookDatabase .....");
+		}
+		
+		return rowsAffected;
+	}
+	
+	
 	public ArrayList<Book> getBestSeller(int limit) throws SQLException {
 		Connection conn = null;
 		ArrayList<Book> bookList = new ArrayList<Book>();
