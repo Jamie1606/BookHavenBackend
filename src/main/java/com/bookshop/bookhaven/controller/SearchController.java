@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookshop.bookhaven.model.Book;
 import com.bookshop.bookhaven.model.SearchDatabase;
 
-
 @RestController
 public class SearchController {
 
@@ -29,29 +28,29 @@ public class SearchController {
 		try {
 			SearchDatabase search_db = new SearchDatabase();
 			bookList = search_db.getBookByBookTitle(title);
+			if (bookList.isEmpty()) {
+				return ResponseEntity.badRequest().body("Book does not exist!");
+			}
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(null);
 		}
-		if (bookList.isEmpty()) {
-			return new ResponseEntity<>("Book does not exist!", HttpStatus.BAD_REQUEST);
-		} else {
-			return new ResponseEntity<>(bookList, HttpStatus.OK);
-		}
+		return ResponseEntity.ok().body(bookList);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/author/{name}")
 	public ResponseEntity<?> getBookByAuthorName(@PathVariable("name") String authorName) {
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		try {
 			SearchDatabase search_db = new SearchDatabase();
 			bookList = search_db.getBookByAuthorName(authorName);
+			if (bookList.isEmpty()) {
+				return ResponseEntity.badRequest().body("Book does not exist!");
+			}
 		} catch (Exception e) {
 			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(null);
 		}
-		if (bookList.isEmpty()) {
-			return new ResponseEntity<>("Book does not exist!", HttpStatus.BAD_REQUEST);
-		} else {
-			return new ResponseEntity<>(bookList, HttpStatus.OK);
-		}
+		return ResponseEntity.ok().body(bookList);
 	}
 }
