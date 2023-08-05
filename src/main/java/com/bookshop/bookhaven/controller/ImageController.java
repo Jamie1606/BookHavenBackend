@@ -11,12 +11,9 @@ import java.util.Base64;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,12 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.bookshop.bookhaven.model.ImageUploadRequest;
-import com.bookshop.bookhaven.model.S3Service;
-import com.bookshop.bookhaven.model.TempAuth;
-import com.bookshop.bookhaven.model.TempAuthDatabase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,7 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class ImageController {
 	
 	// this uploadImageAPI is from aws api gateway and that gateway is used to call lambda function to upload image to s3
-	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/imageoptions";
+	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
 	
 	
 	@RequestMapping(method = RequestMethod.POST, path = "/uploadImage/book/normal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -88,8 +81,8 @@ public class ImageController {
 	}
 	
 	
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteImage/{image}")
-	public ResponseEntity<?> deleteImage(@PathVariable String image, HttpServletRequest request) {
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteImage/{type}/{image}")
+	public ResponseEntity<?> deleteImage(@PathVariable("type") String type, @PathVariable("image") String image, HttpServletRequest request) {
 		
 		boolean condition = false;
 		String role = (String) request.getAttribute("role");
@@ -98,33 +91,8 @@ public class ImageController {
 		if(role != null && (role.equals("ROLE_ADMIN") || role.equals("ROLE_MEMBER")) && id != null && !id.isEmpty()) {
 			try {
 				
-				MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-				queryParams.add("image", image);
-				
-				HttpHeaders headers = new HttpHeaders();
-                HttpEntity<String> entity = new HttpEntity<>(headers);
-                
-                UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(uploadImageAPI)
-                		.queryParams(queryParams);
-
-                RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<String> response = restTemplate.exchange(
-                		builder.toUriString(), 
-                		HttpMethod.DELETE,
-                		entity,
-                		String.class);
-
-                // Handle the response if needed
-                if (response.getStatusCode() == HttpStatus.OK) {
-                   	condition = true;
-                } else {
-                    condition = false;
-                }
-				
-				TempAuthDatabase tmpauth_db = new TempAuthDatabase();
-				TempAuth auth = tmpauth_db.getAuthKey();
-				S3Service s3service = new S3Service(auth.getAccesskey(), auth.getSecretkey(), auth.getSessiontoken());
-				condition = s3service.deleteImage(image);
+				ImageUploadRequest imagerequest = new ImageUploadRequest();
+				condition = imagerequest.deleteImage(uploadImageAPI, type, image);
 			}
 			catch(Exception e) { 
 				e.printStackTrace();
