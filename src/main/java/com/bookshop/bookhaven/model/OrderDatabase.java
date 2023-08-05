@@ -242,7 +242,7 @@ public class OrderDatabase {
 		try {
 			conn = DatabaseConnection.getConnection();
 			
-			String sqlStatement = "SELECT oi.Amount, oi.Qty AS OQty, oi.Status AS OStatus, b.* FROM OrderItem oi, `Order` o, Book b"
+			String sqlStatement = "SELECT oi.Amount, oi.Qty AS OQty, oi.Rated, oi.Status AS OStatus, b.* FROM OrderItem oi, `Order` o, Book b"
 					+ " WHERE o.OrderID = oi.OrderID"
 					+ " AND oi.ISBNNo = b.ISBNNo"
 					+ " AND o.OrderID = ?";
@@ -257,6 +257,7 @@ public class OrderDatabase {
 				orderitem.setQty(rs.getInt("OQty"));
 				orderitem.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("OStatus")));
 				orderitem.setIsbnno(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				orderitem.setRated(rs.getShort("Rated"));
 				
 				Book book = new Book();
 				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));

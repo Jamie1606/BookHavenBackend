@@ -14,7 +14,16 @@ public class OrderItem {
 	private int qty;
 	private double amount;
 	private String status;
+	private short rated;
 	private Book book;
+
+	public short getRated() {
+		return rated;
+	}
+
+	public void setRated(short rated) {
+		this.rated = rated;
+	}
 
 	public Book getBook() {
 		return book;
