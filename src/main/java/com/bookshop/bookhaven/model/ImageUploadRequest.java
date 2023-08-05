@@ -7,6 +7,14 @@
 
 package com.bookshop.bookhaven.model;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 public class ImageUploadRequest {
 	private String image_data;
 	private String image_name;
@@ -29,5 +37,36 @@ public class ImageUploadRequest {
 	}
 	public void setKey(String key) {
 		this.key = key;
+	}
+	
+	public boolean deleteImage(String imageapi, String type, String image) {
+		
+		if(image.equals("defaultBookHavenImage_3d.png") || image.equals("defaultBookHavenImage_normal.png") 
+				|| image.equals("defaultuser.png")) {
+			return true;
+		}
+		
+		boolean condition = false;
+		
+		HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(imageapi + "?type=" + type + "&image=" + image);
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(
+        		builder.toUriString(), 
+        		HttpMethod.DELETE,
+        		entity,
+        		String.class);
+
+        // Handle the response if needed
+        if (response.getStatusCode() == HttpStatus.OK) {
+           	condition = true;
+        } else {
+            condition = false;
+        }
+		
+		return condition;
 	}
 }
