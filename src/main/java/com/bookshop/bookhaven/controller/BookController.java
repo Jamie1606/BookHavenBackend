@@ -30,84 +30,157 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class BookController {
-	
+
 //	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
-	
-	
+
 	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
 	@Cacheable("bestseller")
 	public String getBestSeller(@PathVariable String limit) {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getBestSeller(Integer.parseInt(limit));
-			
+
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
-		} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
-	
-	
+
+	@RequestMapping(path = "/getBestSelling/{limit}", method = RequestMethod.GET)
+	public ResponseEntity<?> getBestSelling(@PathVariable String limit, HttpServletRequest request) {
+
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			System.out.println(
+					(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) + "true or false");
+			try {
+				BookDatabase book_db = new BookDatabase();
+				bookList = book_db.getBestSeller(Integer.parseInt(limit));
+
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(bookList);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(json);
+	}
+
+	@RequestMapping(path = "/getLeastSelling/{limit}", method = RequestMethod.GET)
+	public ResponseEntity<?> getLeastSelling(@PathVariable String limit, HttpServletRequest request) {
+
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				BookDatabase book_db = new BookDatabase();
+				bookList = book_db.getLeastSeller(Integer.parseInt(limit));
+
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(bookList);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(json);
+	}
+
+	@RequestMapping(path = "/getLowStock", method = RequestMethod.GET)
+	public ResponseEntity<?> getLowStock(HttpServletRequest request) {
+
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				BookDatabase book_db = new BookDatabase();
+				bookList = book_db.getLowStock();
+
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(bookList);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(json);
+	}
+
 	@RequestMapping(path = "/getTopRated/{limit}", method = RequestMethod.GET)
 	@Cacheable("toprated")
 	public String getTopRated(@PathVariable String limit) {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getTopRated(Integer.parseInt(limit));
-			
+
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
-		} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-		
-		return json;
-	}
-	
-	
-	@RequestMapping(path = "/getBookByAuthorID/{id}", method = RequestMethod.GET)
-	@Cacheable(value = "bookList", key = "'author-' + #id + '-books'")
-	public String getBookByAuthorID(@PathVariable("id") String id) {
-		
-		ArrayList<Book> bookList = new ArrayList<Book>();
-		String json = null;
-		
-		try {
-			BookDatabase book_db = new BookDatabase();
-			int[] authorID = new int[] {Integer.parseInt(id)};
-			bookList = book_db.getBookByAuthorID(authorID, "");
-			
-			ObjectMapper obj = new ObjectMapper();
-			json = obj.writeValueAsString(bookList);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+
 		return json;
 	}
 
-	
+	@RequestMapping(path = "/getBookByAuthorID/{id}", method = RequestMethod.GET)
+	@Cacheable(value = "bookList", key = "'author-' + #id + '-books'")
+	public String getBookByAuthorID(@PathVariable("id") String id) {
+
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+
+		try {
+			BookDatabase book_db = new BookDatabase();
+			int[] authorID = new int[] { Integer.parseInt(id) };
+			bookList = book_db.getBookByAuthorID(authorID, "");
+
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return json;
+	}
+
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "#isbn + '-related'")
 	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -116,34 +189,32 @@ public class BookController {
 			BookDatabase book_db = new BookDatabase();
 			genreList = book_db.getGenreByISBN(isbn);
 			int[] genreID = new int[genreList.size()];
-			
-			for(int i = 0; i < genreList.size(); i++) {
+
+			for (int i = 0; i < genreList.size(); i++) {
 				genreID[i] = genreList.get(i).getGenreID();
 			}
-			
+
 			bookList = book_db.getBookByGenreID(genreID, isbn);
 			Collections.shuffle(bookList);
-			bookList = new ArrayList<> (bookList.subList(0, Math.min(Integer.parseInt(limit), bookList.size())));
-			
+			bookList = new ArrayList<>(bookList.subList(0, Math.min(Integer.parseInt(limit), bookList.size())));
+
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
-		} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
-	
-	
+
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'latest'")
 	public String getLatest(@PathVariable String no) {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-	
+
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getLatest(Integer.parseInt(no));
@@ -153,18 +224,17 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
-	
-	
+
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'simple'")
 	public String getAllBook() {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
-		
+
 		try {
 			BookDatabase book_db = new BookDatabase();
 			bookList = book_db.getBooks();
@@ -174,15 +244,14 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
-			
+
 		return json;
 	}
 
-	
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
-	@Cacheable(value = "bookList", key="'details'")
+	@Cacheable(value = "bookList", key = "'details'")
 	public String getAllBookDetails() {
-		
+
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
 
@@ -201,15 +270,14 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
 
-	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
-	@Cacheable(value = "bookByISBN", key="#isbn + '-simple'")
+	@Cacheable(value = "bookByISBN", key = "#isbn + '-simple'")
 	public String getBook(@PathVariable String isbn) {
-		
+
 		Book book = new Book();
 		String json = null;
 
@@ -222,22 +290,21 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
 
-	
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
-	@Cacheable(value = "bookByISBN", key="#isbn + '-details'")
+	@Cacheable(value = "bookByISBN", key = "#isbn + '-details'")
 	public String getBookDetails(@PathVariable String isbn) {
-		
+
 		Book book = new Book();
 		String json = null;
 
 		try {
 			BookDatabase book_db = new BookDatabase();
 			book = book_db.getBookByISBN(isbn);
-			if(book != null) {
+			if (book != null) {
 				book.setAuthors(book_db.getAuthorByISBN(isbn));
 				book.setGenres(book_db.getGenreByISBN(isbn));
 			}
@@ -247,22 +314,19 @@ public class BookController {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		return json;
 	}
 
-	
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
-	@Caching( evict = {
-		@CacheEvict(value = "bookList", allEntries = true)
-	})
+	@Caching(evict = { @CacheEvict(value = "bookList", allEntries = true) })
 	public ResponseEntity<?> createBook(@RequestBody Book book, HttpServletRequest request) {
-		
+
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
 //			String jsonBook = obj.writeValueAsString(book);
@@ -278,14 +342,13 @@ public class BookController {
 					row = book_db.createBook(book);
 					if (row == 1) {
 						if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {
-							if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {
+							if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres()
+									.size()) {
 								row = 1;
-							}
-							else {
+							} else {
 								row = -2;
 							}
-						}
-						else {
+						} else {
 							row = -2;
 						}
 					}
@@ -296,95 +359,87 @@ public class BookController {
 				e.printStackTrace();
 				return ResponseEntity.internalServerError().body(row);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		return ResponseEntity.ok().body(row);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.PUT, consumes = "application/json", path = "/updateBook/{isbn}")
-	@Caching( evict = {
-		@CacheEvict(value = "bookList", allEntries = true),
-		@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
-		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'")
-	})
+	@Caching(evict = { @CacheEvict(value = "bookList", allEntries = true),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'") })
 	public ResponseEntity<?> updateBook(@PathVariable String isbn, @RequestBody Book book, HttpServletRequest request) {
-		
+
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				BookDatabase book_db = new BookDatabase();
 				if (book_db.getBookByISBN(isbn) != null) {
 					row = book_db.updateBook(isbn, book);
 					if (row == 1) {
-						
+
 						// get BookAuthor row count
 						// check BookAuthor data is deleted
-						if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {		
-							
-							
+						if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+
 							// get BookGenre row count
 							// check BookGenre data is deleted
-							if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {	
-		
+							if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+
 								// check all BookAuthor is inserted
-								if(book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors().size()) {		
-									
+								if (book_db.createBookAuthor(book.getISBNNo(), book.getAuthors()) == book.getAuthors()
+										.size()) {
+
 									// check all BookGenre is inserted
-									if(book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres().size()) {	
-										row = 1;									
+									if (book_db.createBookGenre(book.getISBNNo(), book.getGenres()) == book.getGenres()
+											.size()) {
+										row = 1;
 									}
 									// not all BookGenre are inserted
-									else {	
+									else {
 										row = 0;
 									}
 								}
 								// not all BookAuthor are not inserted
-								else {	
+								else {
 									row = 0;
 								}
 							}
 							// some BookGenre are not deleted
-							else {	
+							else {
 								row = 0;
 							}
 						}
 						// some BookAuthor are not deleted
-						else {	
+						else {
 							row = 0;
 						}
 					}
-				} 
+				}
 				// invalid isbn (not existing in Book table)
 				else {
-					row = 0; 	 
+					row = 0;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				return ResponseEntity.internalServerError().body(0);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		
+
 		return ResponseEntity.ok().body(row);
 	}
-	
-	
-	
+
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteBook/{isbn}")
-	@Caching( evict = {
-		@CacheEvict(value = "bookList", allEntries = true),
-		@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
-		@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"),
-		@CacheEvict(value = "toprated"),
-		@CacheEvict(value = "bestseller")
-	})
+	@Caching(evict = { @CacheEvict(value = "bookList", allEntries = true),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"), @CacheEvict(value = "toprated"),
+			@CacheEvict(value = "bestseller") })
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
 //		try {
 //			ObjectMapper obj = new ObjectMapper();
@@ -395,18 +450,18 @@ public class BookController {
 //		catch(Exception e) {
 //			e.printStackTrace();
 //		}
-		
+
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			// image delete left
-			
+
 			try {
 				BookDatabase book_db = new BookDatabase();
-				if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-					if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+				if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+					if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
 						row = book_db.deleteBook(isbn);
 					}
 				}
@@ -414,23 +469,21 @@ public class BookController {
 				e.printStackTrace();
 				return ResponseEntity.internalServerError().body(0);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-			
+
 		return ResponseEntity.ok().body(row);
 	}
-	
 
 	// check isbn is referenced from the following website
 	// https://isbn-information.com/check-digit-for-the-13-digit-isbn.html
 	@RequestMapping(method = RequestMethod.GET, path = "/checkISBN13/{isbn}")
 	public boolean checkISBN13(@PathVariable String isbn) {
-		
+
 		boolean condition = false;
 		ArrayList<Integer> isbnInt = new ArrayList<Integer>();
-		
+
 		try {
 			char[] testChars = isbn.toCharArray();
 			for (char c : testChars) {
@@ -459,7 +512,7 @@ public class BookController {
 			e.printStackTrace();
 			return false;
 		}
-		
+
 		return condition;
 	}
 }

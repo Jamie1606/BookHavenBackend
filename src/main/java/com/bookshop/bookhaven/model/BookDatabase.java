@@ -84,6 +84,83 @@ public class BookDatabase {
 		return bookList;
 	}
 	
+	public ArrayList<Book> getLeastSeller(int limit) throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Book ORDER BY SoldQty ASC LIMIT ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, limit);
+			
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				bookList.add(book);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getLeastSeller in BookDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return bookList;
+	}
+	
+	public ArrayList<Book> getLowStock() throws SQLException {
+		Connection conn = null;
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM bookhavendb.Book WHERE qty < 10;";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Book book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setPublisher(StringEscapeUtils.escapeHtml4(rs.getString("Publisher")));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				bookList.add(book);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getLowStock in BookDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return bookList;
+	}
 	
 	public ArrayList<Book> getTopRated(int limit) throws SQLException {
 		Connection conn = null;

@@ -154,40 +154,6 @@ public class MemberController {
 		return ResponseEntity.ok().body(nrow);
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}", consumes = "application/json")
-	public ResponseEntity<?> deleteMember(@PathVariable("id") int memberID, HttpServletRequest request) {
-		String role = (String) request.getAttribute("role");
-		String id = (String) request.getAttribute("id");
-		int nrow = 0;
-
-		if (role != null && id != null && !id.isEmpty()) {
-
-			if (!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-			}
-			try {
-				if (role.equals("ROLE_MEMBER")) {
-					if (Integer.parseInt(id) != memberID) {
-
-						System.out.println("..... role member .....");
-						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-					}
-				}
-				MemberDatabase member_db = new MemberDatabase();
-				System.out.println(".....inside member controller.....");
-				nrow = member_db.deleteMember(memberID);
-				System.out.println(".....done delete member.....");
-			} catch (Exception e) {
-				System.out.println("Error :" + e);
-				return ResponseEntity.internalServerError().body(0);
-			}
-		} else {
-
-			System.out.println("..... mb db forbidden .....");
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-		return ResponseEntity.ok().body(nrow);
-	}
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}")
 	public ResponseEntity<?> deleteMember(@PathVariable("id") String memberID, HttpServletRequest request) {

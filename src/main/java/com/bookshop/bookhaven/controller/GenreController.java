@@ -112,8 +112,8 @@ public class GenreController {
 		return ResponseEntity.ok().body(nrow);
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteGenre/{id}", consumes = "application/json")
-	public ResponseEntity<?> deleteGenre(@PathVariable("id") int genreID, HttpServletRequest request) {
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteGenre/{id}")
+	public ResponseEntity<?> deleteGenre(@PathVariable("id") String genreID, HttpServletRequest request) {
 
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
@@ -122,7 +122,7 @@ public class GenreController {
 			try {
 				GenreDatabase genre_db = new GenreDatabase();
 				System.out.println(".....inside genre controller.....");
-				nrow = genre_db.deleteGenre(genreID);
+				nrow = genre_db.deleteGenre(Integer.parseInt(genreID));
 				System.out.println(".....done delete genre.....");
 			} catch (Exception e) {
 				System.out.println("Error :" + e);
