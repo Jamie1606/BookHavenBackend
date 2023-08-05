@@ -19,6 +19,36 @@ import org.apache.commons.text.StringEscapeUtils;
 public class BookDatabase {
 	
 	
+	public int updateBookRating(String isbn, int rating) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "UPDATE Book SET TotalRating = TotalRating + ?, RatingCount = RatingCount + 1, "
+					+ "Rating = TotalRating / RatingCount "
+					+ "WHERE ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, rating);
+			st.setString(2, isbn);
+			
+			rowsAffected = st.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in updateBookRating in BookDatabase .....");
+			return 0;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return rowsAffected;
+	}
+	
+	
 	public int increaseSoldQty(int qty, String isbnno) throws SQLException {
 		
 		Connection conn = null;
@@ -213,7 +243,9 @@ public class BookDatabase {
 			conn = DatabaseConnection.getConnection();
 			
 			for(OrderItem item: items) {
-				String sqlStatement = "UPDATE Book SET Qty = Qty - ? WHERE ISBNNo = ?";
+				String sqlStatement = "UPDATE Book SET Qty = Qty - ?, "
+						+ "Status = CASE WHEN (Qty - ?) <= 0 THEN 'unavailable' "
+						+ "ELSE 'available' END WHERE ISBNNo = ?";
 				PreparedStatement st = conn.prepareStatement(sqlStatement);
 				
 				st.setInt(1, item.getQty());
@@ -480,7 +512,7 @@ public class BookDatabase {
 			// connecting to database
 			conn = DatabaseConnection.getConnection();
 
-			String sqlStatement = "INSERT INTO Book VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String sqlStatement = "INSERT INTO Book VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setString(1, book.getISBNNo());
 			st.setString(2, book.getTitle());
@@ -491,10 +523,12 @@ public class BookDatabase {
 			st.setInt(7, book.getQty());
 			st.setDouble(8, book.getRating());
 			st.setInt(9, 0);
-			st.setString(10, book.getDescription());
-			st.setString(11, book.getImage());
-			st.setString(12, book.getImage3D());
-			st.setString(13, book.getStatus());
+			st.setInt(10, 0);
+			st.setInt(11, 0);
+			st.setString(12, book.getDescription());
+			st.setString(13, book.getImage());
+			st.setString(14, book.getImage3D());
+			st.setString(15, book.getStatus());
 
 			rowsAffected = st.executeUpdate();
 		} catch (Exception e) {

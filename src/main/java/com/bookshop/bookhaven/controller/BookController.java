@@ -24,15 +24,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookshop.bookhaven.model.Book;
 import com.bookshop.bookhaven.model.BookDatabase;
 import com.bookshop.bookhaven.model.Genre;
+import com.bookshop.bookhaven.model.ImageUploadRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class BookController {
-
-//	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
-
+	
+	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
+	
+	
 	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
 	@Cacheable("bestseller")
 	public String getBestSeller(@PathVariable String limit) {
@@ -193,11 +195,25 @@ public class BookController {
 			for (int i = 0; i < genreList.size(); i++) {
 				genreID[i] = genreList.get(i).getGenreID();
 			}
-
-			bookList = book_db.getBookByGenreID(genreID, isbn);
-			Collections.shuffle(bookList);
-			bookList = new ArrayList<>(bookList.subList(0, Math.min(Integer.parseInt(limit), bookList.size())));
-
+			
+			ArrayList<Book> tempBook = book_db.getBookByGenreID(genreID, isbn);
+			Collections.shuffle(tempBook);
+			int limitInt = Integer.parseInt(limit);
+			for(int i = 0; i < tempBook.size(); i++) {
+				boolean condition = true;
+				for(Book book2: bookList) {
+					if(tempBook.get(i).getISBNNo().equals(book2.getISBNNo())) {
+						condition = false;
+						break;
+					}
+				}
+				if(condition) {
+					bookList.add(tempBook.get(i));
+				}
+				if(i >= limitInt)
+					break;
+			}
+			
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
@@ -325,17 +341,8 @@ public class BookController {
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-
-		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
-//		try {
-//			ObjectMapper obj = new ObjectMapper();
-//			String jsonBook = obj.writeValueAsString(book);
-//			LOGGER.info("JSON data: ", jsonBook);
-//			System.out.println(jsonBook);
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
 				BookDatabase book_db = new BookDatabase();
 				if (book_db.getBookByISBN(book.getISBNNo()) == null) {
@@ -441,30 +448,30 @@ public class BookController {
 			@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"), @CacheEvict(value = "toprated"),
 			@CacheEvict(value = "bestseller") })
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
-//		try {
-//			ObjectMapper obj = new ObjectMapper();
-//			String jsonBook = obj.writeValueAsString(book);
-//			LOGGER.info("JSON data: ", jsonBook);
-//			System.out.println(jsonBook);
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
-
+		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-
-		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+		
+		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			// image delete left
-
+			
 			try {
 				BookDatabase book_db = new BookDatabase();
-				if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-					if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
-						row = book_db.deleteBook(isbn);
+				ImageUploadRequest imagerequest = new ImageUploadRequest();
+				Book book = book_db.getBookByISBN(isbn);
+				String[] image = book.getImage().split("/");
+				String[] image3d = book.getImage3D().split("/");
+				if(imagerequest.deleteImage(uploadImageAPI, "booknormal", image[image.length - 1])) {
+					if(imagerequest.deleteImage(uploadImageAPI, "book3d", image3d[image3d.length - 1])) {
+						if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+							if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+								row = book_db.deleteBook(isbn);
+							}
+						}
 					}
 				}
+					
 			} catch (Exception e) {
 				e.printStackTrace();
 				return ResponseEntity.internalServerError().body(0);

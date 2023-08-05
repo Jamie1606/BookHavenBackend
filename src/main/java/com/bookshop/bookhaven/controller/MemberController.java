@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookshop.bookhaven.model.AdminDatabase;
+import com.bookshop.bookhaven.model.ImageUploadRequest;
 import com.bookshop.bookhaven.model.Member;
 import com.bookshop.bookhaven.model.MemberDatabase;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class MemberController {
+	
+	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getMember/{id}")
 	public ResponseEntity<?> getMemberByID(@PathVariable("id") int memberID, HttpServletRequest request) {
@@ -173,9 +176,13 @@ public class MemberController {
 				}
 				
 				MemberDatabase member_db = new MemberDatabase();
-				System.out.println(".....inside member controller.....");
-				nrow = member_db.deleteMember(Integer.parseInt(memberID));
-				System.out.println(".....done delete member.....");
+				Member member = member_db.getMemberByID(Integer.parseInt(memberID));
+				String[] image = member.getImage().split("/");
+				
+				ImageUploadRequest imagerequest = new ImageUploadRequest();
+				if(imagerequest.deleteImage(uploadImageAPI, "member", image[image.length - 1])) {
+					nrow = member_db.deleteMember(Integer.parseInt(memberID));
+				}
 			} 
 			catch (Exception e) {
 				System.out.println("Error :" + e);

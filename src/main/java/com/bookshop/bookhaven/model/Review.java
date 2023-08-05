@@ -10,6 +10,24 @@ public class Review {
 	private String ISBNNo;
 	private int memberID;
 	private String status;
+	private String memberName;
+	private String memberImage;
+
+	public String getMemberImage() {
+		return memberImage;
+	}
+
+	public void setMemberImage(String memberImage) {
+		this.memberImage = memberImage;
+	}
+
+	public String getMemberName() {
+		return memberName;
+	}
+
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
+	}
 
 	public int getReviewID() {
 		return reviewID;

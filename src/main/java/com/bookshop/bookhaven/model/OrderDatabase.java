@@ -13,11 +13,76 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 
 import org.apache.commons.text.StringEscapeUtils;
 
 public class OrderDatabase {
+	
+	
+	// update order item rated
+	public int updateOrderItemRated(int orderid, String isbn, short rated) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "UPDATE OrderItem SET Rated = ? WHERE OrderID = ? AND ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setShort(1, rated);
+			st.setInt(2, orderid);
+			st.setString(3, isbn);
+			
+			rowsAffected = st.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in updateOrderItemRated in OrderDatabase .....");
+			return 0;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return rowsAffected;
+	}
+	
+	
+	// check order item rating
+	public boolean checkOrderItemRated(int orderid, String isbn) throws SQLException {
+		
+		Connection conn = null;
+		boolean condition = false;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "SELECT * FROM OrderItem WHERE OrderID = ? AND ISBNNo = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, orderid);
+			st.setString(2, isbn);
+			
+			ResultSet rs = st.executeQuery();
+			if(rs.next()) {
+				if(rs.getShort("Rated") != 0) {
+					condition = true;
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in checkOrderItemRated in OrderDatabase .....");
+			return true;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return condition;
+	}
 	
 	
 	// complete order
@@ -390,13 +455,14 @@ public class OrderDatabase {
 			conn = DatabaseConnection.getConnection();
 			
 			for(OrderItem item: items) {
-				String sqlStatement = "INSERT INTO OrderItem VALUES (?, ?, ?, ?, ?)";
+				String sqlStatement = "INSERT INTO OrderItem VALUES (?, ?, ?, ?, ?, ?)";
 				PreparedStatement st = conn.prepareStatement(sqlStatement);
 				st.setInt(1, orderid);
 				st.setString(2, item.getIsbnno());
 				st.setInt(3, item.getQty());
 				st.setDouble(4, item.getAmount());
-				st.setString(5, item.getStatus());
+				st.setShort(5, Short.parseShort("0"));
+				st.setString(6, item.getStatus());
 				rowsAffected += st.executeUpdate();
 			}
 		} catch (Exception e) {
