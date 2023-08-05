@@ -175,17 +175,37 @@ public class MemberController {
 		return ResponseEntity.ok().body(nrow);
 	}
 	
-	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}", consumes = "application/json")
-	public int deleteMember( @PathVariable("id") int memberID) {
+	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}")
+	public ResponseEntity<?> deleteMember(@PathVariable("id") String memberID, HttpServletRequest request) {
+		
 		int nrow = 0;
-		try {
-			MemberDatabase member_db = new MemberDatabase();
-			System.out.println(".....inside member controller.....");
-			nrow = member_db.deleteMember(memberID);
-			System.out.println(".....done delete member.....");
-		} catch (Exception e) {
-			System.out.println("Error :" + e);
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		
+		if(role != null && (role.equals("ROLE_ADMIN") || role.equals("ROLE_MEMBER")) && id != null && !id.isEmpty()) {
+			
+			try {
+				
+				if(role.equals("ROLE_MEMBER")) {
+					if(!id.equals(memberID)) {
+						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+					}
+				}
+				
+				MemberDatabase member_db = new MemberDatabase();
+				System.out.println(".....inside member controller.....");
+				nrow = member_db.deleteMember(Integer.parseInt(memberID));
+				System.out.println(".....done delete member.....");
+			} 
+			catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(0);
+			}
 		}
-		return nrow;
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(nrow);
 	}
 }
