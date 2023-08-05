@@ -28,71 +28,71 @@ import jakarta.servlet.http.HttpServletRequest;
 public class MemberController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getMember/{id}")
-	public ResponseEntity<?> getMember(@PathVariable("id") int memberID, HttpServletRequest request) {
-		
-		String json = "";
+	public ResponseEntity<?> getMemberByID(@PathVariable("id") int memberID, HttpServletRequest request) {
+
+		String json = null;
 		Member member = new Member();
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && id != null && !id.isEmpty()) {
-			
-			if(!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
+
+		if (role != null && id != null && !id.isEmpty()) {
+
+			if (!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 			}
-			
+
 			try {
-				if(role.equals("ROLE_MEMBER")) {
-					if(Integer.parseInt(id) != member.getMemberID()) {
+				if (role.equals("ROLE_MEMBER")) {
+					if (Integer.parseInt(id) != member.getMemberID()) {
 						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 					}
 				}
-				
+
 				MemberDatabase member_db = new MemberDatabase();
-				member = member_db.getMemberByID(memberID);				
+				member = member_db.getMemberByID(memberID);
+				if (member == null) {
+					return ResponseEntity.badRequest().body("Member does not exist!");
+				}
 				ObjectMapper obj = new ObjectMapper();
 				json = obj.writeValueAsString(member);
-			} 
-			catch (Exception e) {
+			} catch (Exception e) {
 				System.out.println("Error :" + e);
 				return ResponseEntity.internalServerError().body(null);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		
+
 		return ResponseEntity.ok().body(json);
+
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getAllMember")
 	public ResponseEntity<?> getAllMember(HttpServletRequest request) {
-		
+
 		ArrayList<Member> memberList = new ArrayList<Member>();
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		String json = "";
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
-			
+		String json = null;
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
 			try {
 				MemberDatabase member_db = new MemberDatabase();
 				memberList = member_db.getAllMember();
-				for(Member m: memberList) {
+				for (Member m : memberList) {
 					m.setPassword("");
 				}
 				ObjectMapper obj = new ObjectMapper();
 				json = obj.writeValueAsString(memberList);
-			} 
-			catch (Exception e) {
+			} catch (Exception e) {
 				System.out.println("Error :" + e);
 				return ResponseEntity.internalServerError().body(null);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		
+
 		return ResponseEntity.ok().body(json);
 	}
 
@@ -102,41 +102,22 @@ public class MemberController {
 		 * nrow -1 -> email duplication 0 -> server error 1 -> success
 		 */
 		int nrow = 0;
-		String role = (String) request.getAttribute("role");
-		String id = (String) request.getAttribute("id");
-		
-		if(role != null && id != null && !id.isEmpty()) {
-			
-			if(!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+		try {
+			MemberDatabase member_db = new MemberDatabase();
+			AdminDatabase admin_db = new AdminDatabase();
+
+			if (member_db.checkMemberEmailExists(member.getEmail()) || admin_db.checkUserByEmail(member.getEmail())) {
+				nrow = -1;
+			} else {
+				nrow = member_db.insertMember(member);
+				System.out.println(".....done create member.....");
 			}
-			
-			try {
-				if(role.equals("ROLE_MEMBER")) {
-					if(Integer.parseInt(id) != member.getMemberID()) {
-						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-					}
-				}
-				MemberDatabase member_db = new MemberDatabase();
-				AdminDatabase admin_db = new AdminDatabase();
-				
-				if (member_db.checkMemberEmailExists(member.getEmail()) || admin_db.checkUserByEmail(member.getEmail())) {
-					nrow = -1;
-				} 
-				else {
-					nrow = member_db.insertMember(member);
-					System.out.println(".....done create member.....");
-				}
-			}
-			catch(Exception e) {
-				System.out.println("Error :" + e);
-				return ResponseEntity.internalServerError().body(0);
-			}
+		} catch (Exception e) {
+			System.out.println("Error :" + e);
+			return ResponseEntity.internalServerError().body(0);
 		}
-		else {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-		
+
 		return ResponseEntity.ok().body(nrow);
 	}
 
@@ -146,34 +127,33 @@ public class MemberController {
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
 		int nrow = 0;
-		
-		if(role != null && id != null && !id.isEmpty()) {
-			
-			if(!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
+
+		if (role != null && id != null && !id.isEmpty()) {
+
+			if (!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 			}
-			
+
 			try {
-				if(role.equals("ROLE_MEMBER")) {
-					if(Integer.parseInt(id) != member.getMemberID()) {
+				if (role.equals("ROLE_MEMBER")) {
+					if (Integer.parseInt(id) != member.getMemberID()) {
 						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 					}
 				}
-				
+
 				MemberDatabase member_db = new MemberDatabase();
 				nrow = member_db.updateMember(member);
-			} 
-			catch (Exception e) {
+			} catch (Exception e) {
 				System.out.println("Error :" + e);
 				return ResponseEntity.internalServerError().body(0);
 			}
-		}
-		else {
+		} else {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		
+
 		return ResponseEntity.ok().body(nrow);
 	}
+
 	
 	@RequestMapping(method = RequestMethod.DELETE, path = "/deleteMember/{id}")
 	public ResponseEntity<?> deleteMember(@PathVariable("id") String memberID, HttpServletRequest request) {
