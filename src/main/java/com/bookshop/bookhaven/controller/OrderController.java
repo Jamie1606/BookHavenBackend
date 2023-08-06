@@ -346,7 +346,7 @@ public class OrderController {
 				}
 				order.setMemberid(Integer.parseInt(id));
 				if(row != -1) {
-					if(order.getDeliveryaddress() == null) {
+					if(order.getDeliveryaddress() == null || order.getDeliveryaddress().isEmpty()) {
 						MemberDatabase member_db = new MemberDatabase();
 						Member member = member_db.getMemberByID(Integer.parseInt(id));
 						order.setDeliveryaddress(member.getAddress());
