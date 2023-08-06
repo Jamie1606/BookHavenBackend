@@ -136,24 +136,28 @@ public class GenreController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBookByGenreID/{id}")
 	public ResponseEntity<?> getBookByGenreID(@PathVariable("id") int genreID) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
+		
 		try {
 			GenreDatabase genre_db = new GenreDatabase();
 			if (genre_db.getGenreByID(genreID) != null) {
 				bookList = genre_db.getBookByGenreID(genreID);
 				if (bookList == null) {
-					return ResponseEntity.badRequest().body("Book does not exist!");
+					return ResponseEntity.badRequest().body(null);
 				}
 				ObjectMapper obj = new ObjectMapper();
 				json = obj.writeValueAsString(bookList);
 			} else {
-				return ResponseEntity.badRequest().body("Genre does not exist!");
+				return ResponseEntity.badRequest().body(null);
 			}
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			System.out.println("Error :" + e);
 			return ResponseEntity.internalServerError().body(null);
 		}
+		
 		return ResponseEntity.ok().body(json);
 	}
 }
