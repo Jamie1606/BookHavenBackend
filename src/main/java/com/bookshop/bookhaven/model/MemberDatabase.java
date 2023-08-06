@@ -13,6 +13,34 @@ import java.util.ArrayList;
 import org.apache.commons.text.StringEscapeUtils;
 
 public class MemberDatabase {
+	
+	
+	public int updatePassword(int memberid, String oldPassword, String newPassword) throws SQLException {
+		
+		Connection conn = null;
+		int rowsAffected = 0;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "UPDATE Member SET Password = ? WHERE MemberID = ? AND Password = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, newPassword);
+			st.setInt(2, memberid);
+			st.setString(3, oldPassword);
+			
+			rowsAffected = st.executeUpdate();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in updatePassword in MemberDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return rowsAffected;
+	}
 
 	
 	// get member info for userdetails by email

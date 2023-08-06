@@ -21,6 +21,7 @@ import com.bookshop.bookhaven.model.AdminDatabase;
 import com.bookshop.bookhaven.model.ImageUploadRequest;
 import com.bookshop.bookhaven.model.Member;
 import com.bookshop.bookhaven.model.MemberDatabase;
+import com.bookshop.bookhaven.model.Password;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,34 @@ import jakarta.servlet.http.HttpServletRequest;
 public class MemberController {
 	
 	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
+	
+	
+	@RequestMapping(method = RequestMethod.PUT, path = "/updatePassword/{id}", consumes = "application/json")
+	public ResponseEntity<?> updatePassword(@PathVariable("id") String memberID, @RequestBody Password password,  HttpServletRequest request) {
+		
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		int row = 0;
+		
+		if(role != null && role.equals("ROLE_MEMBER") && id != null && !id.isEmpty() && id.equals(memberID)) {
+			
+			try {
+				
+				MemberDatabase member_db = new MemberDatabase();
+				row = member_db.updatePassword(Integer.parseInt(id), password.getCurrentPassword(), password.getNewPassword());
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				return ResponseEntity.internalServerError().body(0);
+			}
+		}
+		else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		
+		return ResponseEntity.ok().body(row);
+	}
+	
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getMember/{id}")
 	public ResponseEntity<?> getMemberByID(@PathVariable("id") int memberID, HttpServletRequest request) {

@@ -71,6 +71,7 @@ public class WebSecurityConfig {
 						.requestMatchers("/createMember").permitAll()
 						.requestMatchers("/updateMember").permitAll()
 						.requestMatchers("/deleteMember/{id}").permitAll()
+						.requestMatchers("/updatePassword/{id}").permitAll()
 						.requestMatchers("/getBook/title/{bookTitle}").permitAll()
 						.requestMatchers("/getBook/author/{name}").permitAll()
 						.requestMatchers("/makeOrder").permitAll()
