@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 1.8.2023
+// Description	: middleware for review
+
 package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
@@ -24,6 +31,14 @@ import jakarta.servlet.http.HttpServletRequest;
 public class ReviewController {
 	
 	@RequestMapping(method = RequestMethod.PUT, path = "/updateReview/{id}/{status}")
+	@Caching( evict = {
+			@CacheEvict(value = "bookList", allEntries = true),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-simple'"),
+			@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"),
+			@CacheEvict(value = "memberOrders", allEntries = true),
+			@CacheEvict(value = "bestseller", allEntries = true),
+			@CacheEvict(value = "toprated", allEntries = true)
+		})
 	public ResponseEntity<?> updateReview(@PathVariable("id") String reviewid, @PathVariable("status") String status, 
 			HttpServletRequest request) {
 		
@@ -36,7 +51,15 @@ public class ReviewController {
 			try {
 				
 				ReviewDatabase review_db = new ReviewDatabase();
+				BookDatabase book_db = new BookDatabase();
 				row = review_db.updateReviewStatus(Integer.parseInt(reviewid), Integer.parseInt(id), status);
+				if(row == 1 && status.equals("approved")) {
+					Review review = review_db.getReviewByReviewID(Integer.parseInt(reviewid));
+					row = book_db.updateBookRating(review.getISBNNo(), (int)review.getRating());
+					if(row != 1) {
+						row = 0;
+					}
+				}
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -130,13 +153,7 @@ public class ReviewController {
 				if(!order_db.checkOrderItemRated(orderidInt, review.getISBNNo())) {
 					row = review_db.createReview(review, Integer.parseInt(id));
 					if(row == 1) {
-						if(order_db.updateOrderItemRated(orderidInt, review.getISBNNo(), Short.parseShort("1")) == 1) {
-							row = book_db.updateBookRating(review.getISBNNo(), (int)review.getRating());
-							if(row != 1) {
-								row = 0;
-							}
-						}
-						else {
+						if(order_db.updateOrderItemRated(orderidInt, review.getISBNNo(), Short.parseShort("1")) != 1) {
 							row = 0;
 						}
 					}

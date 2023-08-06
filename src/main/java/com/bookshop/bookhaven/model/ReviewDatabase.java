@@ -1,3 +1,10 @@
+// Author		: Zay Yar Tun
+// Admin No		: 2235035
+// Class		: DIT/FT/2A/02
+// Group		: 10
+// Date			: 1.8.2023
+// Description	: review related database functions
+
 package com.bookshop.bookhaven.model;
 
 import java.sql.Connection;
@@ -9,6 +16,43 @@ import java.util.ArrayList;
 import org.apache.commons.text.StringEscapeUtils;
 
 public class ReviewDatabase {
+	
+	
+	public Review getReviewByReviewID(int reviewid) throws SQLException {
+		
+		Connection conn = null;
+		Review review = null;
+		
+		try {
+			
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT * FROM Review WHERE ReviewID = ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setInt(1, reviewid);
+			
+			ResultSet rs = st.executeQuery();
+			if(rs.next()) {
+				review = new Review();
+				review.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				review.setReviewID(rs.getInt("ReviewID"));
+				review.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				review.setReviewDate(rs.getDate("ReviewDate"));
+				review.setRating(rs.getShort("Rating"));
+				review.setMemberID(rs.getInt("MemberID"));
+				review.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getReviewByReviewID in ReviewDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return review;
+	}
 	
 	
 	public int updateReviewStatus(int reviewid, int adminid, String status) throws SQLException {

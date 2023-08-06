@@ -55,6 +55,7 @@ public class OrderController {
 					if(row == 1) {
 						ArrayList<OrderItem> items = order_db.getOrderItemsByOrderID(item.getOrderid());
 						boolean condition = true;
+						int completeitems = 0;
 						for(int i = 0; i < items.size(); i++) {
 							if(items.get(i).getIsbnno().equals(item.getIsbnno())) {
 								BookDatabase book_db = new BookDatabase();
@@ -67,6 +68,9 @@ public class OrderController {
 									break;
 								}
 							}
+							if(!items.get(i).getStatus().equals("pending")) {
+								completeitems += 1;
+							}
 							if(!items.get(i).getStatus().equals("cancelled")) {
 								condition = false;
 							}
@@ -76,6 +80,14 @@ public class OrderController {
 							row = order_db.cancelOrder(item.getOrderid());
 							if(row != 1) {
 								row = 0;
+							}
+						}
+						else {
+							if(completeitems == items.size()) {
+								row = order_db.completeOrder(item.getOrderid());
+								if(row != 1) {
+									row = 0;
+								}
 							}
 						}
 					}
@@ -115,7 +127,7 @@ public class OrderController {
 					row = order_db.completeOrderItem(item);
 					if(row == 1) {
 						ArrayList<OrderItem> items = order_db.getOrderItemsByOrderID(item.getOrderid());
-						boolean condition = true;
+						int completeitems = 0;
 						for(int i = 0; i < items.size(); i++) {
 							if(items.get(i).getIsbnno().equals(item.getIsbnno())) {
 								BookDatabase book_db = new BookDatabase();
@@ -125,11 +137,11 @@ public class OrderController {
 									break;
 								}
 							}
-							if(!items.get(i).getStatus().equals("delivered")) {
-								condition = false;
+							if(!items.get(i).getStatus().equals("pending")) {
+								completeitems += 1;
 							}
 						}
-						if(condition) {
+						if(completeitems == items.size()) {
 							
 							row = order_db.completeOrder(item.getOrderid());
 							if(row != 1) {
