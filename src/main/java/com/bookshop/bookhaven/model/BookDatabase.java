@@ -19,6 +19,37 @@ import org.apache.commons.text.StringEscapeUtils;
 public class BookDatabase {
 	
 	
+	public boolean checkQty(String isbn, int qty) throws SQLException {
+		
+		Connection conn = null;
+		boolean condition = false;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "SELECT * FROM Book WHERE ISBNNo = ? AND Qty >= ?";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setString(1, isbn);
+			st.setInt(2, qty);
+			
+			ResultSet rs = st.executeQuery();
+			if(rs.next()) {
+				condition = true;
+			}
+			
+		}
+		catch(Exception e) {
+			System.out.println("..... Error in checkQty in BookDatabase .....");
+			return false;
+		}
+		finally {
+			conn.close();
+		}
+		
+		return condition;		
+	}
+	
+	
 	public int updateBookRating(String isbn, int rating) throws SQLException {
 		
 		Connection conn = null;
