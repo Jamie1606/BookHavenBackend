@@ -152,7 +152,7 @@ public class OrderDatabase {
 		try {
 			conn = DatabaseConnection.getConnection();
 			
-			String sqlStatement = "SELECT * FROM `Order` o, Member m WHERE o.MemberID = m.MemberID ORDER BY o.OrderDate DESC";
+			String sqlStatement = "SELECT * FROM `Order` o LEFT JOIN Member m ON m.MemberID = o.MemberID ORDER BY o.OrderDate DESC";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			
 			ResultSet rs = st.executeQuery();
@@ -307,10 +307,10 @@ public class OrderDatabase {
 		try {
 			conn = DatabaseConnection.getConnection();
 			
-			String sqlStatement = "SELECT oi.Amount, oi.Qty AS OQty, oi.Rated, oi.Status AS OStatus, b.* FROM OrderItem oi, `Order` o, Book b"
-					+ " WHERE o.OrderID = oi.OrderID"
-					+ " AND oi.ISBNNo = b.ISBNNo"
-					+ " AND o.OrderID = ?";
+			String sqlStatement = "SELECT oi.Amount, oi.Qty AS OQty, oi.Rated, oi.Status AS OStatus, b.* FROM OrderItem oi"
+					+ " LEFT JOIN Book b ON b.ISBNNo = oi.ISBNNo"
+					+ " LEFT JOIN `Order` o ON o.OrderID = oi.OrderID"
+					+ " WHERE o.OrderID = ?";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
 			st.setInt(1, orderid);
 			

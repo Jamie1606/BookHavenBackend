@@ -9,48 +9,63 @@ package com.bookshop.bookhaven.controller;
 
 import java.util.ArrayList;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookshop.bookhaven.model.Book;
+import com.bookshop.bookhaven.model.BookDatabase;
 import com.bookshop.bookhaven.model.SearchDatabase;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class SearchController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/title/{bookTitle}")
-	public ResponseEntity<?> getBookByBookTitle(@PathVariable("bookTitle") String title) {
+	public String getBookByBookTitle(@PathVariable("bookTitle") String title) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = "";
+		
 		try {
+			
 			SearchDatabase search_db = new SearchDatabase();
 			bookList = search_db.getBookByBookTitle(title);
-			if (bookList.isEmpty()) {
-				return ResponseEntity.badRequest().body("Book does not exist!");
-			}
-		} catch (Exception e) {
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} 
+		catch (Exception e) {
 			System.out.println("Error :" + e);
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
-		return ResponseEntity.ok().body(bookList);
+		return json;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/author/{name}")
-	public ResponseEntity<?> getBookByAuthorName(@PathVariable("name") String authorName) {
+	public String getBookByAuthorName(@PathVariable("name") String authorName) {
+		
 		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = "";
+		
 		try {
 			SearchDatabase search_db = new SearchDatabase();
+			BookDatabase book_db = new BookDatabase();
 			bookList = search_db.getBookByAuthorName(authorName);
-			if (bookList.isEmpty()) {
-				return ResponseEntity.badRequest().body("Book does not exist!");
+			if(bookList != null && bookList.size() > 0) {
+				for(int i = 0; i < bookList.size(); i++) {
+					bookList.get(i).setAuthors(book_db.getAuthorByISBN(bookList.get(i).getISBNNo()));
+				}
 			}
-		} catch (Exception e) {
+			ObjectMapper obj = new ObjectMapper();
+			json = obj.writeValueAsString(bookList);
+		} 
+		catch (Exception e) {
 			System.out.println("Error :" + e);
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
-		return ResponseEntity.ok().body(bookList);
+		
+		return json;
 	}
 }

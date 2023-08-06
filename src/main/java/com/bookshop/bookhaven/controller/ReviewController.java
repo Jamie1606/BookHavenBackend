@@ -81,7 +81,7 @@ public class ReviewController {
 	
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getReview/{isbn}")
-	public String getReviewByISBN(@PathVariable("isbn") String isbn) {
+	public ResponseEntity<?> getReviewByISBN(@PathVariable("isbn") String isbn) {
 		
 		String json = "";
 		ArrayList<Review> reviewList = new ArrayList<Review>();
@@ -95,10 +95,10 @@ public class ReviewController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return null;
+			return ResponseEntity.internalServerError().body(null);
 		}
 		
-		return json;
+		return ResponseEntity.ok().body(json);
 	}
 	
 	

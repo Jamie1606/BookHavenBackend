@@ -8,6 +8,7 @@
 package com.bookshop.bookhaven.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +30,7 @@ public class UserCredentialsController {
 	
 	
 	@RequestMapping(method = RequestMethod.POST, path = "/userlogin", consumes = "application/json")
-	public String login(@RequestBody UserCredentials userCredentials) {
+	public ResponseEntity<?> login(@RequestBody UserCredentials userCredentials) {
 		
 		String json = null;
 		Admin loginAdmin = null;
@@ -75,9 +76,9 @@ public class UserCredentialsController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return null;
+			return ResponseEntity.internalServerError().body(null);
 		}
 		
-		return json;
+		return ResponseEntity.ok().body(json);
 	}
 }

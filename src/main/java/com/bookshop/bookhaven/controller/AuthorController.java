@@ -32,7 +32,7 @@ public class AuthorController {
 	
 	@RequestMapping(path = "/getAllAuthor", method = RequestMethod.GET)
 	@Cacheable("authorList")
-	public String getAllAuthor() {
+	public ResponseEntity<?> getAllAuthor() {
 		
 		String json = null;
 		ArrayList<Author> authorList = new ArrayList<Author>();
@@ -45,15 +45,15 @@ public class AuthorController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return null;
+			return ResponseEntity.internalServerError().body(null);
 		}
-		return json;
+		return ResponseEntity.ok().body(json);
 	}
 	
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getAuthor/{id}")
 	@Cacheable(value = "authorById", key = "#id + '-author'")
-	public String getAuthor(@PathVariable("id") String authorid) {
+	public ResponseEntity<?> getAuthor(@PathVariable("id") String authorid) {
 		
 		Author author = new Author();
 		String json = null;
@@ -66,10 +66,10 @@ public class AuthorController {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return null;
+			return ResponseEntity.internalServerError().body(null);
 		}
 		
-		return json;
+		return ResponseEntity.ok().body(json);
 	}
 	
 	
