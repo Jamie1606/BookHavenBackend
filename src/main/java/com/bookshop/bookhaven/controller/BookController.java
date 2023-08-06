@@ -131,11 +131,9 @@ public class BookController {
 				json = obj.writeValueAsString(bookList);
 			} catch (Exception e) {
 				e.printStackTrace();
-<<<<<<< Updated upstream
+
 				return ResponseEntity.internalServerError().body(null);
-=======
-				return null;
->>>>>>> Stashed changes
+
 			}
 
 		} else {
@@ -152,11 +150,8 @@ public class BookController {
 		String json = null;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-<<<<<<< Updated upstream
 		System.out.println(startDate);
 		System.out.println(endDate);
-=======
->>>>>>> Stashed changes
 
 		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			try {
@@ -166,7 +161,6 @@ public class BookController {
 
 				for (Order order : orderList) {
 					
-<<<<<<< Updated upstream
 					System.out.println("order.getOrderid()" + order.getOrderid());
 				    int orderID = order.getOrderid();
 			        bookList = book_db.getBookByOrderID(orderID);
@@ -177,20 +171,6 @@ public class BookController {
 				    	OrderItem item = new OrderItem();
 				    	item.setBook(bookList.get(i));
 				    	orderItemList.add(item);
-=======
-					System.out.println("order.getOrderid()"+order.getOrderid());
-				    int orderID = order.getOrderid();
-			        bookList = book_db.getBookByOrderID(orderID);
-			        System.out.println("booklist"+bookList.size());
-			        int i=0;
-
-					ArrayList<OrderItem> orderItemList = new ArrayList<OrderItem>();
-				    for (Book book : bookList) {
-				    	System.out.println("orderItemList.get(i).getBook()"+orderItemList.get(i).getBook());
-				    	
-				        orderItemList.get(i).setBook(book);
-				    	i++;
->>>>>>> Stashed changes
 				    }
 				    order.setOrderitems(orderItemList);
 				}
@@ -207,7 +187,7 @@ public class BookController {
 		}
 		return ResponseEntity.ok().body(json);
 	}
-
+	
 	@RequestMapping(path = "/getTopRated/{limit}", method = RequestMethod.GET)
 	@Cacheable("toprated")
 	public String getTopRated(@PathVariable String limit) {
