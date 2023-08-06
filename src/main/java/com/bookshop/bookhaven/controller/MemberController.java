@@ -41,14 +41,17 @@ public class MemberController {
 		if (role != null && id != null && !id.isEmpty()) {
 
 			if (!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")) {
+				System.out.println("!role.equals(\"ROLE_ADMIN\") && !role.equals(\"ROLE_MEMBER\")"+(!role.equals("ROLE_ADMIN") && !role.equals("ROLE_MEMBER")));
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 			}
 
 			try {
 				if (role.equals("ROLE_MEMBER")) {
-					if (Integer.parseInt(id) != member.getMemberID()) {
-						return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-					}
+					memberID = Integer.parseInt(id);
+					/*
+					 * if (Integer.parseInt(id) != member.getMemberID()) { return
+					 * ResponseEntity.status(HttpStatus.FORBIDDEN).build(); }
+					 */
 				}
 
 				MemberDatabase member_db = new MemberDatabase();

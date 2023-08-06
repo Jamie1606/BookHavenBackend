@@ -41,7 +41,7 @@ public class BookController {
 
 	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
 	@Cacheable("bestseller")
-	public ResponseEntity<?> getBestSeller(@PathVariable String limit) {
+	public String getBestSeller(@PathVariable String limit) {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -54,10 +54,10 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getBestSelling/{limit}", method = RequestMethod.GET)
@@ -79,7 +79,7 @@ public class BookController {
 				json = obj.writeValueAsString(bookList);
 			} catch (Exception e) {
 				e.printStackTrace();
-				return ResponseEntity.internalServerError().body(null);
+				return null;
 			}
 
 		} else {
@@ -105,7 +105,7 @@ public class BookController {
 				json = obj.writeValueAsString(bookList);
 			} catch (Exception e) {
 				e.printStackTrace();
-				return ResponseEntity.internalServerError().body(null);
+				return null;
 			}
 
 		} else {
@@ -131,7 +131,9 @@ public class BookController {
 				json = obj.writeValueAsString(bookList);
 			} catch (Exception e) {
 				e.printStackTrace();
+
 				return ResponseEntity.internalServerError().body(null);
+
 			}
 
 		} else {
@@ -185,10 +187,10 @@ public class BookController {
 		}
 		return ResponseEntity.ok().body(json);
 	}
-
+	
 	@RequestMapping(path = "/getTopRated/{limit}", method = RequestMethod.GET)
 	@Cacheable("toprated")
-	public ResponseEntity<?> getTopRated(@PathVariable String limit) {
+	public String getTopRated(@PathVariable String limit) {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -201,15 +203,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getBookByAuthorID/{id}", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'author-' + #id + '-books'")
-	public ResponseEntity<?> getBookByAuthorID(@PathVariable("id") String id) {
+	public String getBookByAuthorID(@PathVariable("id") String id) {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -223,15 +225,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getRelated/{isbn}/{limit}", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "#isbn + '-related'")
-	public ResponseEntity<?> getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
+	public String getRelated(@PathVariable("isbn") String isbn, @PathVariable("limit") String limit) {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -274,15 +276,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getLatest/{no}", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'latest'")
-	public ResponseEntity<?> getLatest(@PathVariable String no) {
+	public String getLatest(@PathVariable String no) {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -294,15 +296,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getAllBook", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'simple'")
-	public ResponseEntity<?> getAllBook() {
+	public String getAllBook() {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -314,15 +316,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(path = "/getAllBook/details", method = RequestMethod.GET)
 	@Cacheable(value = "bookList", key = "'details'")
-	public ResponseEntity<?> getAllBookDetails() {
+	public String getAllBookDetails() {
 
 		ArrayList<Book> bookList = new ArrayList<Book>();
 		String json = null;
@@ -340,15 +342,15 @@ public class BookController {
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/{isbn}")
 	@Cacheable(value = "bookByISBN", key = "#isbn + '-simple'")
-	public ResponseEntity<?> getBook(@PathVariable String isbn) {
+	public String getBook(@PathVariable String isbn) {
 
 		Book book = new Book();
 		String json = null;
@@ -360,15 +362,15 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/getBook/details/{isbn}")
 	@Cacheable(value = "bookByISBN", key = "#isbn + '-details'")
-	public ResponseEntity<?> getBookDetails(@PathVariable String isbn) {
+	public String getBookDetails(@PathVariable String isbn) {
 
 		Book book = new Book();
 		String json = null;
@@ -384,10 +386,10 @@ public class BookController {
 			json = obj.writeValueAsString(book);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(null);
+			return null;
 		}
 
-		return ResponseEntity.ok().body(json);
+		return json;
 	}
 
 	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", path = "/createBook")
@@ -560,7 +562,7 @@ public class BookController {
 	// check isbn is referenced from the following website
 	// https://isbn-information.com/check-digit-for-the-13-digit-isbn.html
 	@RequestMapping(method = RequestMethod.GET, path = "/checkISBN13/{isbn}")
-	public ResponseEntity<?> checkISBN13(@PathVariable String isbn) {
+	public boolean checkISBN13(@PathVariable String isbn) {
 
 		boolean condition = false;
 		ArrayList<Integer> isbnInt = new ArrayList<Integer>();
@@ -591,9 +593,9 @@ public class BookController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.internalServerError().body(false);
+			return false;
 		}
 
-		return ResponseEntity.ok().body(condition);
+		return condition;
 	}
 }
