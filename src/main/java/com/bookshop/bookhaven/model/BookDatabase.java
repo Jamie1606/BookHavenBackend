@@ -249,7 +249,8 @@ public class BookDatabase {
 				PreparedStatement st = conn.prepareStatement(sqlStatement);
 				
 				st.setInt(1, item.getQty());
-				st.setString(2, item.getIsbnno());
+				st.setInt(2, item.getQty());
+				st.setString(3, item.getIsbnno());
 				
 				rowsAffected += st.executeUpdate();
 			}
