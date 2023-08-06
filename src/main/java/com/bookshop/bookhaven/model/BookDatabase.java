@@ -487,6 +487,7 @@ public class BookDatabase {
 				book.setPublicationDate(rs.getDate("PublicationDate"));
 				book.setQty(rs.getInt("Qty"));
 				book.setRating(rs.getDouble("Rating"));
+				book.setRatingcount(rs.getInt("RatingCount"));
 				book.setSoldqty(rs.getInt("SoldQty"));
 				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
 				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));

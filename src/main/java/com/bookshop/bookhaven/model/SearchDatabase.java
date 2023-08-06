@@ -23,7 +23,7 @@ public class SearchDatabase {
 		Connection conn = null;
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement="SELECT b.*  FROM Book AS b JOIN BookAuthor AS ba ON b.ISBNNo=ba.ISBNNo JOIN Author AS a ON ba.AuthorID=a.AuthorID WHERE Lower(a.Name) LIKE ?";
+			String sqlStatement="SELECT b.* FROM Book AS b JOIN BookAuthor AS ba ON b.ISBNNo=ba.ISBNNo JOIN Author AS a ON ba.AuthorID=a.AuthorID WHERE Lower(a.Name) LIKE ?";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStatement);
 			String name="%"+authorName.toLowerCase()+"%";
 			pstmt.setString(1,name);
