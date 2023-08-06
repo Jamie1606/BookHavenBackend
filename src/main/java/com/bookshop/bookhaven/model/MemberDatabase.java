@@ -340,4 +340,101 @@ public class MemberDatabase {
 		}
 		return nrow;
 	}
+	
+	// select top customers
+	public ArrayList<Member> getTopMemberList(int limit) throws SQLException {
+		
+		ArrayList<Member> memberList = new ArrayList<>();
+		Connection conn = null;
+		Member uBean = null;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT m.*  FROM bookhavendb.Member m JOIN bookhavendb.Order o ON m.MemberID = o.MemberID WHERE m.MemberID IS NOT NULL GROUP BY m.MemberID ORDER BY SUM(o.amount) DESC LIMIT ?;";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setInt(1, limit);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				uBean = new Member();
+				uBean.setMemberID(rs.getInt("MemberID"));
+				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
+				
+				if(rs.getString("Gender") == null) {
+					uBean.setGender('N');
+				}
+				else {
+					uBean.setGender(rs.getString("Gender").charAt(0));
+				}
+				
+				uBean.setBirthDate(rs.getDate("BirthDate"));
+				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
+				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
+				uBean.setEmail(StringEscapeUtils.escapeHtml4(rs.getString("Email")));
+				uBean.setPassword(StringEscapeUtils.escapeHtml4(rs.getString("Password")));
+				uBean.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				uBean.setLastActive(rs.getDate("LastActive"));
+				memberList.add(uBean);
+				System.out.println(".....done writing " + uBean.getMemberID() + " to List!.....");
+			}
+		} catch (Exception e) {
+			System.out.println(".......memberDB : " + e);
+			memberList = null;
+		} finally {
+			conn.close();
+		}
+		
+		return memberList;
+	}
+	
+	// select all member data
+	public ArrayList<Member> getMemberListByISBN(String isbn) throws SQLException {
+		
+		ArrayList<Member> memberList = new ArrayList<>();
+		Connection conn = null;
+		Member uBean = null;
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			String sqlStatement = "SELECT DISTINCT m.*\r\n"
+					+ "FROM bookhavendb.Member m\r\n"
+					+ "INNER JOIN bookhavendb.Order o ON m.MemberID = o.MemberID\r\n"
+					+ "INNER JOIN OrderItem oi ON o.OrderID = oi.OrderID\r\n"
+					+ "INNER JOIN Book b ON oi.ISBNNo = b.ISBNNo\r\n"
+					+ "WHERE b.ISBNNo = ?;";
+			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+			pstmt.setString(1, isbn);
+			ResultSet rs = pstmt.executeQuery();
+			
+			while (rs.next()) {
+				uBean = new Member();
+				uBean.setMemberID(rs.getInt("MemberID"));
+				uBean.setName(StringEscapeUtils.escapeHtml4(rs.getString("Name")));
+				
+				if(rs.getString("Gender") == null) {
+					uBean.setGender('N');
+				}
+				else {
+					uBean.setGender(rs.getString("Gender").charAt(0));
+				}
+				
+				uBean.setBirthDate(rs.getDate("BirthDate"));
+				uBean.setPhone(StringEscapeUtils.escapeHtml4(rs.getString("Phone")));
+				uBean.setAddress(StringEscapeUtils.escapeHtml4(rs.getString("Address")));
+				uBean.setEmail(StringEscapeUtils.escapeHtml4(rs.getString("Email")));
+				uBean.setPassword(StringEscapeUtils.escapeHtml4(rs.getString("Password")));
+				uBean.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				uBean.setLastActive(rs.getDate("LastActive"));
+				memberList.add(uBean);
+				System.out.println(".....done writing " + uBean.getMemberID() + " to List!.....");
+			}
+		} catch (Exception e) {
+			System.out.println(".......memberDB : " + e);
+			memberList = null;
+		} finally {
+			conn.close();
+		}
+		
+		return memberList;
+	}
 }

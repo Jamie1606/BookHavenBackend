@@ -195,4 +195,62 @@ public class MemberController {
 		
 		return ResponseEntity.ok().body(nrow);
 	}
+	
+	@RequestMapping(method = RequestMethod.GET, path = "/getTopMemberList/{limit}")
+	public ResponseEntity<?> getTopMemberList(@PathVariable("limit") int limit, HttpServletRequest request) {
+
+		ArrayList<Member> memberList = new ArrayList<Member>();
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		String json = null;
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+			try {
+				MemberDatabase member_db = new MemberDatabase();
+				memberList = member_db.getTopMemberList(limit);
+				for (Member m : memberList) {
+					m.setPassword("");
+				}
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(memberList);
+			} catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(null);
+			}
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		return ResponseEntity.ok().body(json);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, path = "/getMemberListByISBN/{isbn}")
+	public ResponseEntity<?> getMemberListByISBN(@PathVariable("isbn") String isbn, HttpServletRequest request) {
+
+		ArrayList<Member> memberList = new ArrayList<Member>();
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+		String json = null;
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+			try {
+				MemberDatabase member_db = new MemberDatabase();
+				memberList = member_db.getMemberListByISBN(isbn);
+				for (Member m : memberList) {
+					m.setPassword("");
+				}
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(memberList);
+			} catch (Exception e) {
+				System.out.println("Error :" + e);
+				return ResponseEntity.internalServerError().body(null);
+			}
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+
+		return ResponseEntity.ok().body(json);
+	}
 }

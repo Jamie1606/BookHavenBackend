@@ -822,4 +822,45 @@ public class BookDatabase {
 		}
 		return rowsAffected;
 	}
+	
+	//get book by order id
+	public ArrayList<Book> getBookByOrderID(int orderID) throws SQLException {
+	    ArrayList<Book> bookList = new ArrayList<>();
+	    Connection conn = null;
+	    Book book = null;
+	    
+	    try {
+	        conn = DatabaseConnection.getConnection();
+	        String sqlStatement = "SELECT * FROM Book b JOIN OrderItem oi ON b.ISBNNo = oi.ISBNNo WHERE oi.OrderID = ?";
+	        PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
+	        pstmt.setInt(1, orderID);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        while (rs.next()) {
+	        	book = new Book();
+				book.setISBNNo(StringEscapeUtils.escapeHtml4(rs.getString("ISBNNo")));
+				book.setTitle(StringEscapeUtils.escapeHtml4(rs.getString("Title")));
+				book.setPage(rs.getInt("Page"));
+				book.setPrice(rs.getDouble("Price"));
+				book.setQty(rs.getInt("Qty"));
+				book.setRating(rs.getDouble("Rating"));
+				book.setSoldqty(rs.getInt("SoldQty"));
+				book.setPublisher(rs.getString("Publisher"));
+				book.setPublicationDate(rs.getDate("PublicationDate"));
+				book.setDescription(StringEscapeUtils.escapeHtml4(rs.getString("Description")));
+				book.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
+				book.setImage3D(StringEscapeUtils.escapeHtml4(rs.getString("Image3D")));
+				book.setStatus(StringEscapeUtils.escapeHtml4(rs.getString("Status")));
+				bookList.add(book);
+	        }
+	    } catch (Exception e) {
+	        System.out.println("...Error in getBookByOrderID: " + e);
+	        bookList = null;
+	    } finally {
+	        conn.close();
+	    }
+	    
+	    return bookList;
+	}
+
 }
