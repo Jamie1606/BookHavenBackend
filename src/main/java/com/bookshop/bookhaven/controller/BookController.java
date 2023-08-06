@@ -31,10 +31,11 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class BookController {
-	
+
 	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
-	
-	
+
+//	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
+
 	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
 	@Cacheable("bestseller")
 	public String getBestSeller(@PathVariable String limit) {
@@ -195,6 +196,7 @@ public class BookController {
 			for (int i = 0; i < genreList.size(); i++) {
 				genreID[i] = genreList.get(i).getGenreID();
 			}
+
 			
 			ArrayList<Book> tempBook = book_db.getBookByGenreID(genreID, isbn);
 			Collections.shuffle(tempBook);
@@ -214,6 +216,11 @@ public class BookController {
 					break;
 			}
 			
+
+			bookList = book_db.getBookByGenreID(genreID, isbn);
+			Collections.shuffle(bookList);
+			bookList = new ArrayList<>(bookList.subList(0, Math.min(Integer.parseInt(limit), bookList.size())));
+
 			ObjectMapper obj = new ObjectMapper();
 			json = obj.writeValueAsString(bookList);
 		} catch (Exception e) {
@@ -341,8 +348,20 @@ public class BookController {
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+//		try {
+//			ObjectMapper obj = new ObjectMapper();
+//			String jsonBook = obj.writeValueAsString(book);
+//			LOGGER.info("JSON data: ", jsonBook);
+//			System.out.println(jsonBook);
+//		}
+//		catch(Exception e) {
+//			e.printStackTrace();
+//		}
+
 			try {
 				BookDatabase book_db = new BookDatabase();
 				if (book_db.getBookByISBN(book.getISBNNo()) == null) {
@@ -448,30 +467,36 @@ public class BookController {
 			@CacheEvict(value = "bookByISBN", key = "#isbn + '-details'"), @CacheEvict(value = "toprated"),
 			@CacheEvict(value = "bestseller") })
 	public ResponseEntity<?> deleteBook(@PathVariable String isbn, HttpServletRequest request) {
-		
 		int row = 0;
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
-		
-		if(role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
 			// image delete left
-			
+
 			try {
 				BookDatabase book_db = new BookDatabase();
+
 				ImageUploadRequest imagerequest = new ImageUploadRequest();
 				Book book = book_db.getBookByISBN(isbn);
 				String[] image = book.getImage().split("/");
 				String[] image3d = book.getImage3D().split("/");
-				if(imagerequest.deleteImage(uploadImageAPI, "booknormal", image[image.length - 1])) {
-					if(imagerequest.deleteImage(uploadImageAPI, "book3d", image3d[image3d.length - 1])) {
-						if(book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-							if(book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+				if (imagerequest.deleteImage(uploadImageAPI, "booknormal", image[image.length - 1])) {
+					if (imagerequest.deleteImage(uploadImageAPI, "book3d", image3d[image3d.length - 1])) {
+						if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+							if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
 								row = book_db.deleteBook(isbn);
+							}
+						}
+
+						if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
+							if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
+								row = book_db.deleteBook(isbn);
+
 							}
 						}
 					}
 				}
-					
 			} catch (Exception e) {
 				e.printStackTrace();
 				return ResponseEntity.internalServerError().body(0);
