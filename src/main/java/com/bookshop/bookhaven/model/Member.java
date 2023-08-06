@@ -8,6 +8,7 @@
 package com.bookshop.bookhaven.model;
 
 import java.sql.Date;
+import java.util.ArrayList;
 
 public class Member {
 
@@ -21,7 +22,15 @@ public class Member {
 	private String password;
 	private String image;
 	private Date lastActive;
+	private double totalPurchase = 0;
 
+	public double getTotalPurchase() {
+		return totalPurchase;
+	}
+
+	public void setTotalPurchase(double totalPurchase) {
+		this.totalPurchase = totalPurchase;
+	}
 
 	public int getMemberID() {
 		return memberID;
