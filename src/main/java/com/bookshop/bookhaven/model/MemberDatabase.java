@@ -378,7 +378,7 @@ public class MemberDatabase {
 		
 		try {
 			conn = DatabaseConnection.getConnection();
-			String sqlStatement = "SELECT m.*  FROM bookhavendb.Member m JOIN bookhavendb.Order o ON m.MemberID = o.MemberID WHERE m.MemberID IS NOT NULL GROUP BY m.MemberID ORDER BY SUM(o.amount) DESC LIMIT ?;";
+			String sqlStatement = "SELECT m.*,SUM(o.amount) AS TotalPurchase  FROM bookhavendb.Member m JOIN bookhavendb.Order o ON m.MemberID = o.MemberID WHERE m.MemberID IS NOT NULL GROUP BY m.MemberID ORDER BY TotalPurchase DESC LIMIT ?;";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStatement);
 			pstmt.setInt(1, limit);
 			ResultSet rs = pstmt.executeQuery();
@@ -402,6 +402,7 @@ public class MemberDatabase {
 				uBean.setPassword(StringEscapeUtils.escapeHtml4(rs.getString("Password")));
 				uBean.setImage(StringEscapeUtils.escapeHtml4(rs.getString("Image")));
 				uBean.setLastActive(rs.getDate("LastActive"));
+				uBean.setTotalPurchase(rs.getDouble("TotalPurchase"));
 				memberList.add(uBean);
 				System.out.println(".....done writing " + uBean.getMemberID() + " to List!.....");
 			}
