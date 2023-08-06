@@ -185,6 +185,52 @@ public class BookController {
 		}
 		return ResponseEntity.ok().body(json);
 	}
+	
+	@RequestMapping(path = "/getBookByDate/{startDate}/{endDate}", method = RequestMethod.GET)
+	public ResponseEntity<?> getBookByDate(@PathVariable String startDate,
+	        @PathVariable String endDate, HttpServletRequest request) {
+
+		ArrayList<Book> bookList = new ArrayList<Book>();
+		String json = null;
+		String role = (String) request.getAttribute("role");
+		String id = (String) request.getAttribute("id");
+
+		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
+			try {
+				OrderDatabase order_db = new OrderDatabase();
+				BookDatabase book_db = new BookDatabase();
+				ArrayList<Order> orderList = order_db.getOrdersbyDate(startDate, endDate);
+
+				for (Order order : orderList) {
+					
+					System.out.println("order.getOrderid()"+order.getOrderid());
+				    int orderID = order.getOrderid();
+			        bookList = book_db.getBookByOrderID(orderID);
+			        System.out.println("booklist"+bookList.size());
+			        int i=0;
+
+					ArrayList<OrderItem> orderItemList = new ArrayList<OrderItem>();
+				    for (Book book : bookList) {
+				    	System.out.println("orderItemList.get(i).getBook()"+orderItemList.get(i).getBook());
+				    	
+				        orderItemList.get(i).setBook(book);
+				    	i++;
+				    }
+				    order.setOrderitems(orderItemList);
+				}
+
+				ObjectMapper obj = new ObjectMapper();
+				json = obj.writeValueAsString(orderList);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		return ResponseEntity.ok().body(json);
+	}
 
 	@RequestMapping(path = "/getTopRated/{limit}", method = RequestMethod.GET)
 	@Cacheable("toprated")
