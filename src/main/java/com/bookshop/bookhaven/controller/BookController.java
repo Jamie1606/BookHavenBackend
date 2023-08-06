@@ -37,8 +37,6 @@ public class BookController {
 
 	private String uploadImageAPI = "https://le5w8tau6b.execute-api.us-east-1.amazonaws.com/s3image";
 
-//	private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
-
 	@RequestMapping(path = "/getBestSeller/{limit}", method = RequestMethod.GET)
 	@Cacheable("bestseller")
 	public String getBestSeller(@PathVariable String limit) {
@@ -400,18 +398,7 @@ public class BookController {
 		String role = (String) request.getAttribute("role");
 		String id = (String) request.getAttribute("id");
 
-
-
 		if (role != null && role.equals("ROLE_ADMIN") && id != null && !id.isEmpty()) {
-//		try {
-//			ObjectMapper obj = new ObjectMapper();
-//			String jsonBook = obj.writeValueAsString(book);
-//			LOGGER.info("JSON data: ", jsonBook);
-//			System.out.println(jsonBook);
-//		}
-//		catch(Exception e) {
-//			e.printStackTrace();
-//		}
 
 			try {
 				BookDatabase book_db = new BookDatabase();
@@ -537,13 +524,6 @@ public class BookController {
 						if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
 							if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
 								row = book_db.deleteBook(isbn);
-							}
-						}
-
-						if (book_db.getBookAuthorCount(isbn, 0) == book_db.deleteBookAuthor(isbn, 0)) {
-							if (book_db.getBookGenreCount(isbn, 0) == book_db.deleteBookGenre(isbn, 0)) {
-								row = book_db.deleteBook(isbn);
-
 							}
 						}
 					}

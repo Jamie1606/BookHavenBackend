@@ -335,39 +335,50 @@ public class OrderController {
 		
 		if(role != null && role.equals("ROLE_MEMBER") && id != null && !id.isEmpty()) {
 			try {
-				try {
-					StripePayment payment = new StripePayment();
-					int amountInCents = (int) (order.getTotalamount() * 100);
-					payment.processPayment(order.getToken(), amountInCents, "SGD");
-				}
-				catch(StripeException e) {
-					System.out.println(e.getMessage());
-					row = -1;
-				}
-				order.setMemberid(Integer.parseInt(id));
-				if(row != -1) {
-					if(order.getDeliveryaddress() == null || order.getDeliveryaddress().isEmpty()) {
-						MemberDatabase member_db = new MemberDatabase();
-						Member member = member_db.getMemberByID(Integer.parseInt(id));
-						order.setDeliveryaddress(member.getAddress());
+				
+				BookDatabase book_db = new BookDatabase();
+				boolean condition = true;
+				for(int i = 0; i < order.getOrderitems().size(); i++) {
+					condition = book_db.checkQty(order.getOrderitems().get(i).getIsbnno(), order.getOrderitems().get(i).getQty());
+					if(condition == false) {
+						break;
 					}
-					OrderDatabase order_db = new OrderDatabase();
-					row = order_db.createOrder(order);
+				}
+				
+				if(condition) {
+					order.setMemberid(Integer.parseInt(id));
 					if(row != -1) {
-						row = order_db.createOrderItem(order.getOrderitems(), row);
-						if(row == order.getOrderitems().size()) {
-							BookDatabase book_db = new BookDatabase();
-							row = book_db.changeBookQty(order.getOrderitems());
+						if(order.getDeliveryaddress() == null || order.getDeliveryaddress().isEmpty()) {
+							MemberDatabase member_db = new MemberDatabase();
+							Member member = member_db.getMemberByID(Integer.parseInt(id));
+							order.setDeliveryaddress(member.getAddress());
+						}
+						OrderDatabase order_db = new OrderDatabase();
+						row = order_db.createOrder(order);
+						if(row != -1) {
+							row = order_db.createOrderItem(order.getOrderitems(), row);
 							if(row == order.getOrderitems().size()) {
-								row = 1;
+								row = book_db.changeBookQty(order.getOrderitems());
+								if(row == order.getOrderitems().size()) {
+									try {
+										StripePayment payment = new StripePayment();
+										int amountInCents = (int) (order.getTotalamount() * 100);
+										payment.processPayment(order.getToken(), amountInCents, "SGD");
+										row = 1;
+									}
+									catch(StripeException e) {
+										System.out.println(e.getMessage());
+										row = -1;
+									}
+								}
+							}
+							else {
+								row = 0;
 							}
 						}
 						else {
 							row = 0;
 						}
-					}
-					else {
-						row = 0;
 					}
 				}
 			}
