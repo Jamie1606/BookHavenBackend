@@ -485,8 +485,8 @@ public class OrderDatabase {
 			
 			String sqlStatement = "SELECT * FROM `Order` o WHERE o.OrderDate >= ? AND o.OrderDate <= ?;";
 			PreparedStatement st = conn.prepareStatement(sqlStatement);
-			st.setDate(1, Date.valueOf(startDate));
-			st.setDate(2, Date.valueOf(endDate));
+			st.setString(1, startDate);
+			st.setString(2, endDate);
 			
 			ResultSet rs = st.executeQuery();
 			while(rs.next()) {

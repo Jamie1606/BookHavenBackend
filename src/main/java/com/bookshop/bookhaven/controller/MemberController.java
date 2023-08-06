@@ -196,8 +196,8 @@ public class MemberController {
 		return ResponseEntity.ok().body(nrow);
 	}
 	
-	@RequestMapping(method = RequestMethod.GET, path = "/getTopMemberList/{limit}")
-	public ResponseEntity<?> getTopMemberList(@PathVariable("limit") int limit, HttpServletRequest request) {
+	@RequestMapping(method = RequestMethod.GET, path = "/getTopCustomers/{limit}")
+	public ResponseEntity<?> getTopCustomerList(@PathVariable("limit") int limit, HttpServletRequest request) {
 
 		ArrayList<Member> memberList = new ArrayList<Member>();
 		String role = (String) request.getAttribute("role");
