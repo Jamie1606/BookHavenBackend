@@ -474,4 +474,42 @@ public class OrderDatabase {
 		
 		return rowsAffected;
 	}
+	
+	// get order by date
+	public ArrayList<Order> getOrdersbyDate(String startDate, String endDate) throws SQLException {
+		Connection conn = null;
+		ArrayList<Order> orders = new ArrayList<Order>();
+		
+		try {
+			conn = DatabaseConnection.getConnection();
+			
+			String sqlStatement = "SELECT * FROM `Order` o WHERE o.OrderDate >= ? AND o.OrderDate <= ?;";
+			PreparedStatement st = conn.prepareStatement(sqlStatement);
+			st.setDate(1, Date.valueOf(startDate));
+			st.setDate(2, Date.valueOf(endDate));
+			
+			ResultSet rs = st.executeQuery();
+			while(rs.next()) {
+				Order order = new Order();
+				order.setOrderid(rs.getInt("OrderID"));
+				order.setOrderdate(rs.getDate("OrderDate"));
+				order.setAmount(rs.getDouble("Amount"));
+				order.setGst(rs.getInt("GST"));
+				order.setTotalamount(rs.getDouble("TotalAmount"));
+				order.setOrderstatus(StringEscapeUtils.escapeHtml4(rs.getString("OrderStatus")));
+				order.setDeliveryaddress(StringEscapeUtils.escapeHtml4(rs.getString("DeliveryAddress")));
+				order.setMemberid(rs.getInt("MemberID"));
+				orders.add(order);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("..... Error in getOrders in OrderDatabase .....");
+		}
+		finally {
+			conn.close();
+		}
+		
+		return orders;
+	}
 }

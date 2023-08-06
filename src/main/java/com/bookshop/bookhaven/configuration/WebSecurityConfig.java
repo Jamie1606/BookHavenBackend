@@ -84,6 +84,9 @@ public class WebSecurityConfig {
 						.requestMatchers("/getReview/{isbn}").permitAll()
 						.requestMatchers("/getAllReview").permitAll()
 						.requestMatchers("/updateReview/{id}/{status}").permitAll()
+						.requestMatchers("/getTopCustomers/{limit}").permitAll()
+						.requestMatchers("/getMemberListByISBN/{isbn}").permitAll()
+						.requestMatchers("/getBookByDate/{startDate}/{endDate}").permitAll()
 						.anyRequest().authenticated())
 				.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
